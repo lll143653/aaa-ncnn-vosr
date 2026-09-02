@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pt
+*.pnnx.param
+*.pnnx.bin
+*_pnnx.py
+*_ncnn.py
+build/
+*.ncnn.bin
+3rdparty/
+outputs/
+.vscode/
