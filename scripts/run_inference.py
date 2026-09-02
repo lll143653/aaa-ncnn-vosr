@@ -124,9 +124,9 @@ def wavelet_color_fix(target01, source01, sigma=5):
     return np.clip(src_low + target01 - tgt_low, 0, 1)
 
 
-def sr_tile(nets, tile_img, noise):
-    """One 128x128 LR tile (PIL Image) -> (512,512,3) float [0,1], pre color fix."""
-    venc, dino, dit_a, dit_b, vdec = nets
+def sr_pre(nets, tile_img):
+    """Pre-DiT stage: host resize + vae_encoder + dinov2 -> (lq_latent, z_raw)."""
+    venc, dino = nets[0], nets[1]
     up = tile_img.resize((RES, RES), Image.BICUBIC)          # PIL 8bit bicubic
     up01 = np.asarray(up, dtype=np.float32) / 255.0
     lq = up01.transpose(2, 0, 1) * 2.0 - 1.0                 # (3,512,512) [-1,1]
@@ -136,14 +136,30 @@ def sr_tile(nets, tile_img, noise):
     dino_in = resize_bicubic_torch(up01, DINO, DINO).clip(0, 1)
     dino_in = (dino_in - IMAGENET_MEAN) / IMAGENET_STD
     z_raw = dino(dino_in.transpose(2, 0, 1))                 # (1024,1024)
+    return lq_latent, z_raw
 
+
+def sr_dit(nets, lq_latent, noise, z_raw):
+    """DiT stage (the bottleneck): -> sr_latent (16,64,64)."""
+    dit_a, dit_b = nets[2], nets[3]
     x_tokens = dit_a(lq_latent, noise, z_raw)                # (1024,1536)
     tokens = dit_b(x_tokens, z_raw)                          # (1024,64)
     u = unpatchify(tokens)                                   # (16,64,64)
-    sr_latent = noise - u                                    # one step, t: 1 -> 0
+    return noise - u                                         # one step, t: 1 -> 0
 
+
+def sr_post(nets, sr_latent):
+    """Post-DiT stage: vae_decoder -> ((512,512,3) float [0,1], raw pix [-1,1])."""
+    vdec = nets[4]
     pix = vdec(sr_latent)                                    # (3,512,512) [-1,1]
     return (pix.transpose(1, 2, 0) + 1.0) * 0.5, pix
+
+
+def sr_tile(nets, tile_img, noise):
+    """One 128x128 LR tile (PIL Image) -> ((512,512,3) [0,1], raw pix [-1,1])."""
+    lq_latent, z_raw = sr_pre(nets, tile_img)
+    sr_latent = sr_dit(nets, lq_latent, noise, z_raw)
+    return sr_post(nets, sr_latent)
 
 
 # ---------------------------------------------------------------------------
@@ -227,34 +243,60 @@ def main():
         print(f'saved {args.output}', flush=True)
         os._exit(0)
 
-    # ---- tiled mode ----
+    # ---- tiled mode (pipelined: pre/dit/post of different tiles overlap) ----
+    # pre  = host resize + vae_encoder + dinov2   (background thread)
+    # dit  = vosr_dit_a + vosr_dit_b              (main thread, the bottleneck)
+    # post = vae_decoder + blending               (background thread)
+    # ncnn releases the GIL during extract and one Extractor per call is
+    # thread-safe, so the three stages of different tiles run concurrently.
+    # Tiles are processed in the same row-major order and with the same
+    # per-tile noise seeds as the serial version -> bit-identical output.
+    from concurrent.futures import ThreadPoolExecutor
     xs = tile_starts(w, lr_tile, TILE_STRIDE)
     ys = tile_starts(h, lr_tile, TILE_STRIDE)
+    n_tiles = len(xs) * len(ys)
     print(f'tiled: input {w}x{h} -> {tw}x{th}, grid {len(xs)}x{len(ys)} '
-          f'({len(xs) * len(ys)} tiles of {lr_tile}px, stride {TILE_STRIDE})', flush=True)
+          f'({n_tiles} tiles of {lr_tile}px, stride {TILE_STRIDE})', flush=True)
 
     # per-axis blend weights per tile position (SR pixel space)
     wx = [ramp_weights(RES, RAMP, x > 0, x + lr_tile < w) for x in xs]
     wy = [ramp_weights(RES, RAMP, y > 0, y + lr_tile < h) for y in ys]
+    positions = [(iy, y, ix, x) for iy, y in enumerate(ys) for ix, x in enumerate(xs)]
 
     acc = np.zeros((th, tw, 3), dtype=np.float32)
     wsum = np.zeros((th, tw, 1), dtype=np.float32)
-    idx = 0
+
+    def pre(idx):
+        iy, y, ix, x = positions[idx]
+        tile = img.crop((x, y, x + lr_tile, y + lr_tile))
+        lq_latent, z_raw = sr_pre(nets, tile)
+        w2 = (wy[iy][:, None] * wx[ix][None, :])[..., None]
+        return lq_latent, z_raw, w2, y * args.upscale, x * args.upscale
+
+    def post(sr_latent, w2, ys_sr, xs_sr):
+        out01, _ = sr_post(nets, sr_latent)
+        acc[ys_sr:ys_sr + RES, xs_sr:xs_sr + RES] += out01 * w2
+        wsum[ys_sr:ys_sr + RES, xs_sr:xs_sr + RES] += w2
+
     import time
     t0 = time.time()
-    for iy, y in enumerate(ys):
-        for ix, x in enumerate(xs):
-            tile = img.crop((x, y, x + lr_tile, y + lr_tile))
-            noise = np.random.RandomState(args.seed + idx).standard_normal(
-                (ZC, LAT, LAT)).astype(np.float32)
-            out01, _ = sr_tile(nets, tile, noise)
-            w2 = (wy[iy][:, None] * wx[ix][None, :])[..., None]
-            ys_sr, xs_sr = y * args.upscale, x * args.upscale
-            acc[ys_sr:ys_sr + RES, xs_sr:xs_sr + RES] += out01 * w2
-            wsum[ys_sr:ys_sr + RES, xs_sr:xs_sr + RES] += w2
-            idx += 1
-            print(f'  tile {idx}/{len(xs) * len(ys)} '
-                  f'({time.time() - t0:.1f}s elapsed)', flush=True)
+    pre_pool = ThreadPoolExecutor(1)
+    post_pool = ThreadPoolExecutor(1)
+    pre_fut = pre_pool.submit(pre, 0)
+    posts = []
+    for idx in range(n_tiles):
+        lq_latent, z_raw, w2, ys_sr, xs_sr = pre_fut.result()
+        if idx + 1 < n_tiles:
+            pre_fut = pre_pool.submit(pre, idx + 1)   # prefetch next tile's pre-stage
+        noise = np.random.RandomState(args.seed + idx).standard_normal(
+            (ZC, LAT, LAT)).astype(np.float32)
+        sr_latent = sr_dit(nets, lq_latent, noise, z_raw)
+        posts.append(post_pool.submit(post, sr_latent, w2, ys_sr, xs_sr))
+        print(f'  tile {idx + 1}/{n_tiles} ({time.time() - t0:.1f}s elapsed)', flush=True)
+    for f in posts:
+        f.result()
+    pre_pool.shutdown()
+    post_pool.shutdown()
 
     out01 = acc / np.maximum(wsum, 1e-6)
     if not args.no_color_fix:

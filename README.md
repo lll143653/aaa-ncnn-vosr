@@ -116,6 +116,15 @@ Inputs larger than 128×128 automatically switch to tiled mode: the LR image is
 processed in 128×128 tiles with stride 96 (32 px overlap), merged with linear-ramp
 blending, and the wavelet color fix runs once on the merged image.
 
+Tiled mode is pipelined across tiles: the pre-DiT stage (host resize + vae_encoder +
+dinov2) of the next tile and the post-DiT stage (vae_decoder + blending) of the
+previous tile run in background threads while the DiT of the current tile runs on
+the main thread (ncnn releases the GIL during extract; one Extractor per call is
+thread-safe). Tiles keep the serial row-major order and per-tile noise seeds, so the
+output is bit-identical to serial processing. In practice the DiT saturates the GPU
+queue, so on Vulkan the overlap only buys a few percent — the real speedup for large
+images would come from re-converting the graphs with batch > 1.
+
 IMPORTANT: always feed ncnn with ncnn-allocated aligned Mats and copy data in
 (`ncnn.Mat(numpy)` is zero-copy and numpy buffers are not guaranteed 32-byte
 aligned → SIMD kernels can segfault). `run_inference.py` already does this.
