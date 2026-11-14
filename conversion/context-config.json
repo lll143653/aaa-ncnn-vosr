@@ -1,0 +1,6 @@
+{
+  "backend_extensions": {
+    "shared_library_path": "E:/work/ai/tools/qairt/2.44.0.260225/lib/x86_64-windows-msvc/QnnHtpNetRunExtensions.dll",
+    "config_file_path": "E:/work/ai/aaa-ncnn-vosr/conversion/htp-config.json"
+  }
+}

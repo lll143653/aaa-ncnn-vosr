@@ -1,0 +1,992 @@
+[
+  {
+    "destination": "models/vosr/VOSR_0.5B_os/args.json",
+    "sha256": null,
+    "size": 769,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/VOSR_0.5B_os/args.json?download=true"
+  },
+  {
+    "destination": "models/vosr/VOSR_0.5B_os/checkpoints/ema_model.safetensors",
+    "sha256": "45b6687b4ce59fa3451300f9e0fdcaf2e729c15e65f444af210a7851dfa13203",
+    "size": 1948337520,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/VOSR_0.5B_os/checkpoints/ema_model.safetensors?download=true"
+  },
+  {
+    "destination": "models/vosr/sd21_lwdecoder.pth",
+    "sha256": "a326a5e5c4a2445ce970987695979f3d5e5413d39b98c73a2ddac0055d2cdf59",
+    "size": 52086482,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/sd21_lwdecoder.pth?download=true"
+  },
+  {
+    "destination": "models/vosr/stable-diffusion-2-1-base/vae/config.json",
+    "sha256": null,
+    "size": 582,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/stable-diffusion-2-1-base/vae/config.json?download=true"
+  },
+  {
+    "destination": "models/vosr/stable-diffusion-2-1-base/vae/diffusion_pytorch_model.safetensors",
+    "sha256": "a1d993488569e928462932c8c38a0760b874d166399b14414135bd9c42df5815",
+    "size": 334643276,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/stable-diffusion-2-1-base/vae/diffusion_pytorch_model.safetensors?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/checkpoints/dinov2_vitb14_pretrain.pth",
+    "sha256": "0b8b82f85de91b424aded121c7e1dcc2b7bc6d0adeea651bf73a13307fad8c73",
+    "size": 346378731,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/checkpoints/dinov2_vitb14_pretrain.pth?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/LICENSE",
+    "sha256": null,
+    "size": 11562,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/LICENSE?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/__init__.py",
+    "sha256": null,
+    "size": 224,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/configs/__init__.py",
+    "sha256": null,
+    "size": 703,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/configs/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/__init__.py",
+    "sha256": null,
+    "size": 573,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/accumulators.py",
+    "sha256": null,
+    "size": 5306,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/accumulators.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/adapters.py",
+    "sha256": null,
+    "size": 2117,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/adapters.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/augmentations.py",
+    "sha256": null,
+    "size": 4095,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/augmentations.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/cell_dino/augmentations.py",
+    "sha256": null,
+    "size": 3231,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/cell_dino/augmentations.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/cell_dino/transforms.py",
+    "sha256": null,
+    "size": 4955,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/cell_dino/transforms.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/collate.py",
+    "sha256": null,
+    "size": 2047,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/collate.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/__init__.py",
+    "sha256": null,
+    "size": 486,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/cell_dino/chammi_cp.py",
+    "sha256": null,
+    "size": 3211,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/cell_dino/chammi_cp.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/cell_dino/chammi_hpa.py",
+    "sha256": null,
+    "size": 3186,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/cell_dino/chammi_hpa.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/cell_dino/chammi_wtc.py",
+    "sha256": null,
+    "size": 3008,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/cell_dino/chammi_wtc.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/cell_dino/hpafov.py",
+    "sha256": null,
+    "size": 9002,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/cell_dino/hpafov.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/cell_dino/hpaone.py",
+    "sha256": null,
+    "size": 6611,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/cell_dino/hpaone.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/decoders.py",
+    "sha256": null,
+    "size": 3033,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/decoders.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/extended.py",
+    "sha256": null,
+    "size": 1605,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/extended.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/image_net.py",
+    "sha256": null,
+    "size": 11121,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/image_net.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/image_net_22k.py",
+    "sha256": null,
+    "size": 10543,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/datasets/image_net_22k.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/loaders.py",
+    "sha256": null,
+    "size": 7291,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/loaders.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/masking.py",
+    "sha256": null,
+    "size": 3031,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/masking.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/samplers.py",
+    "sha256": null,
+    "size": 7874,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/samplers.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/data/transforms.py",
+    "sha256": null,
+    "size": 3147,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/data/transforms.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/distributed/__init__.py",
+    "sha256": null,
+    "size": 8846,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/distributed/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/__init__.py",
+    "sha256": null,
+    "size": 199,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/cell_dino/knn.py",
+    "sha256": null,
+    "size": 17267,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/cell_dino/knn.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/cell_dino/linear.py",
+    "sha256": null,
+    "size": 38635,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/cell_dino/linear.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/cell_dino/utils.py",
+    "sha256": null,
+    "size": 23684,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/cell_dino/utils.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/__init__.py",
+    "sha256": null,
+    "size": 199,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/__init__.py",
+    "sha256": null,
+    "size": 470,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/backbones/__init__.py",
+    "sha256": null,
+    "size": 256,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/backbones/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/backbones/vision_transformer.py",
+    "sha256": null,
+    "size": 451,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/backbones/vision_transformer.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/builder.py",
+    "sha256": null,
+    "size": 1469,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/builder.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/decode_heads/__init__.py",
+    "sha256": null,
+    "size": 265,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/decode_heads/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/decode_heads/decode_head.py",
+    "sha256": null,
+    "size": 8878,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/decode_heads/decode_head.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/decode_heads/dpt_head.py",
+    "sha256": null,
+    "size": 10704,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/decode_heads/dpt_head.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/decode_heads/linear_head.py",
+    "sha256": null,
+    "size": 3322,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/decode_heads/linear_head.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/depther/__init__.py",
+    "sha256": null,
+    "size": 282,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/depther/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/depther/base.py",
+    "sha256": null,
+    "size": 7891,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/depther/base.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/depther/encoder_decoder.py",
+    "sha256": null,
+    "size": 9161,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/depther/encoder_decoder.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/losses/__init__.py",
+    "sha256": null,
+    "size": 271,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/losses/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/losses/gradientloss.py",
+    "sha256": null,
+    "size": 2609,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/losses/gradientloss.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/losses/sigloss.py",
+    "sha256": null,
+    "size": 2351,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/models/losses/sigloss.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/ops/__init__.py",
+    "sha256": null,
+    "size": 231,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/ops/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/ops/wrappers.py",
+    "sha256": null,
+    "size": 1257,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/depth/ops/wrappers.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/knn.py",
+    "sha256": null,
+    "size": 14859,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/knn.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/linear.py",
+    "sha256": null,
+    "size": 22051,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/linear.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/log_regression.py",
+    "sha256": null,
+    "size": 15582,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/log_regression.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/metrics.py",
+    "sha256": null,
+    "size": 4541,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/metrics.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/__init__.py",
+    "sha256": null,
+    "size": 199,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/hooks/__init__.py",
+    "sha256": null,
+    "size": 243,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/hooks/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/hooks/optimizer.py",
+    "sha256": null,
+    "size": 1455,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/hooks/optimizer.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/models/__init__.py",
+    "sha256": null,
+    "size": 284,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/models/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/models/backbones/__init__.py",
+    "sha256": null,
+    "size": 256,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/models/backbones/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/models/backbones/vision_transformer.py",
+    "sha256": null,
+    "size": 495,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/models/backbones/vision_transformer.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/models/decode_heads/__init__.py",
+    "sha256": null,
+    "size": 234,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/models/decode_heads/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/models/decode_heads/linear_head.py",
+    "sha256": null,
+    "size": 3382,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/models/decode_heads/linear_head.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/utils/__init__.py",
+    "sha256": null,
+    "size": 199,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/utils/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/utils/colormaps.py",
+    "sha256": null,
+    "size": 8047,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation/utils/colormaps.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/__init__.py",
+    "sha256": null,
+    "size": 307,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/__init__.py",
+    "sha256": null,
+    "size": 405,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/anchor/__init__.py",
+    "sha256": null,
+    "size": 264,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/anchor/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/anchor/builder.py",
+    "sha256": null,
+    "size": 735,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/anchor/builder.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/anchor/point_generator.py",
+    "sha256": null,
+    "size": 9019,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/anchor/point_generator.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/__init__.py",
+    "sha256": null,
+    "size": 294,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/builder.py",
+    "sha256": null,
+    "size": 613,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/builder.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/samplers/__init__.py",
+    "sha256": null,
+    "size": 267,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/samplers/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/samplers/base_sampler.py",
+    "sha256": null,
+    "size": 3911,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/samplers/base_sampler.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/samplers/mask_pseudo_sampler.py",
+    "sha256": null,
+    "size": 1692,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/samplers/mask_pseudo_sampler.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/samplers/mask_sampling_result.py",
+    "sha256": null,
+    "size": 2226,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/samplers/mask_sampling_result.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/samplers/sampling_result.py",
+    "sha256": null,
+    "size": 5567,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/box/samplers/sampling_result.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/utils/__init__.py",
+    "sha256": null,
+    "size": 281,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/utils/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/utils/dist_utils.py",
+    "sha256": null,
+    "size": 534,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/utils/dist_utils.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/utils/misc.py",
+    "sha256": null,
+    "size": 1371,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/core/utils/misc.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/__init__.py",
+    "sha256": null,
+    "size": 496,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/backbones/__init__.py",
+    "sha256": null,
+    "size": 238,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/backbones/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/backbones/adapter_modules.py",
+    "sha256": null,
+    "size": 15425,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/backbones/adapter_modules.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/backbones/drop_path.py",
+    "sha256": null,
+    "size": 1177,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/backbones/drop_path.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/backbones/vit.py",
+    "sha256": null,
+    "size": 20687,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/backbones/vit.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/backbones/vit_adapter.py",
+    "sha256": null,
+    "size": 8155,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/backbones/vit_adapter.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/builder.py",
+    "sha256": null,
+    "size": 644,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/builder.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/decode_heads/__init__.py",
+    "sha256": null,
+    "size": 248,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/decode_heads/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/decode_heads/mask2former_head.py",
+    "sha256": null,
+    "size": 25875,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/decode_heads/mask2former_head.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/losses/__init__.py",
+    "sha256": null,
+    "size": 418,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/losses/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/losses/cross_entropy_loss.py",
+    "sha256": null,
+    "size": 11571,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/losses/cross_entropy_loss.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/losses/dice_loss.py",
+    "sha256": null,
+    "size": 6492,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/losses/dice_loss.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/losses/match_costs.py",
+    "sha256": null,
+    "size": 5501,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/losses/match_costs.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/plugins/__init__.py",
+    "sha256": null,
+    "size": 267,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/plugins/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/plugins/msdeformattn_pixel_decoder.py",
+    "sha256": null,
+    "size": 10948,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/plugins/msdeformattn_pixel_decoder.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/segmentors/__init__.py",
+    "sha256": null,
+    "size": 269,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/segmentors/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/segmentors/encoder_decoder_mask2former.py",
+    "sha256": null,
+    "size": 10903,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/segmentors/encoder_decoder_mask2former.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/utils/__init__.py",
+    "sha256": null,
+    "size": 504,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/utils/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/utils/assigner.py",
+    "sha256": null,
+    "size": 6525,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/utils/assigner.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/utils/point_sample.py",
+    "sha256": null,
+    "size": 3975,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/utils/point_sample.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/utils/positional_encoding.py",
+    "sha256": null,
+    "size": 6576,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/utils/positional_encoding.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/utils/transformer.py",
+    "sha256": null,
+    "size": 42353,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/models/utils/transformer.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/ops/modules/__init__.py",
+    "sha256": null,
+    "size": 435,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/ops/modules/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/ops/modules/ms_deform_attn.py",
+    "sha256": null,
+    "size": 8481,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/segmentation_m2f/ops/modules/ms_deform_attn.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/setup.py",
+    "sha256": null,
+    "size": 2144,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/setup.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/eval/utils.py",
+    "sha256": null,
+    "size": 5351,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/eval/utils.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/fsdp/__init__.py",
+    "sha256": null,
+    "size": 5272,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/fsdp/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/__init__.py",
+    "sha256": null,
+    "size": 199,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/backbones.py",
+    "sha256": null,
+    "size": 5746,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/backbones.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/cell_dino/backbones.py",
+    "sha256": null,
+    "size": 5209,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/cell_dino/backbones.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/classifiers.py",
+    "sha256": null,
+    "size": 8463,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/classifiers.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/depth/__init__.py",
+    "sha256": null,
+    "size": 294,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/depth/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/depth/decode_heads.py",
+    "sha256": null,
+    "size": 30015,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/depth/decode_heads.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/depth/encoder_decoder.py",
+    "sha256": null,
+    "size": 14260,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/depth/encoder_decoder.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/depth/ops.py",
+    "sha256": null,
+    "size": 1257,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/depth/ops.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/depthers.py",
+    "sha256": null,
+    "size": 8395,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/depthers.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/dinotxt.py",
+    "sha256": null,
+    "size": 3086,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/dinotxt.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/dinotxt_model.py",
+    "sha256": null,
+    "size": 5792,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/dinotxt_model.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/dinov2_wrapper.py",
+    "sha256": null,
+    "size": 2664,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/dinov2_wrapper.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/text_tower.py",
+    "sha256": null,
+    "size": 3617,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/text_tower.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/text_transformer.py",
+    "sha256": null,
+    "size": 2496,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/text_transformer.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/tokenizer.py",
+    "sha256": null,
+    "size": 1707,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/tokenizer.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/vision_tower.py",
+    "sha256": null,
+    "size": 7023,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/text/vision_tower.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/utils.py",
+    "sha256": null,
+    "size": 1299,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/utils.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/hub/xray_dino/backbones.py",
+    "sha256": null,
+    "size": 866,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/hub/xray_dino/backbones.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/layers/__init__.py",
+    "sha256": null,
+    "size": 510,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/layers/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/layers/attention.py",
+    "sha256": null,
+    "size": 3397,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/layers/attention.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/layers/block.py",
+    "sha256": null,
+    "size": 11925,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/layers/block.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/layers/dino_head.py",
+    "sha256": null,
+    "size": 2065,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/layers/dino_head.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/layers/drop_path.py",
+    "sha256": null,
+    "size": 1191,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/layers/drop_path.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/layers/layer_scale.py",
+    "sha256": null,
+    "size": 1131,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/layers/layer_scale.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/layers/mlp.py",
+    "sha256": null,
+    "size": 1309,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/layers/mlp.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/layers/patch_embed.py",
+    "sha256": null,
+    "size": 2917,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/layers/patch_embed.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py",
+    "sha256": null,
+    "size": 3300,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/logging/__init__.py",
+    "sha256": null,
+    "size": 3386,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/logging/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/logging/helpers.py",
+    "sha256": null,
+    "size": 6414,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/logging/helpers.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/loss/__init__.py",
+    "sha256": null,
+    "size": 322,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/loss/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/loss/dino_clstoken_loss.py",
+    "sha256": null,
+    "size": 3746,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/loss/dino_clstoken_loss.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/loss/ibot_patch_loss.py",
+    "sha256": null,
+    "size": 5869,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/loss/ibot_patch_loss.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/loss/koleo_loss.py",
+    "sha256": null,
+    "size": 1656,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/loss/koleo_loss.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/models/__init__.py",
+    "sha256": null,
+    "size": 1619,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/models/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/models/vision_transformer.py",
+    "sha256": null,
+    "size": 16866,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/models/vision_transformer.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/run/__init__.py",
+    "sha256": null,
+    "size": 199,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/run/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/run/eval/cell_dino/knn.py",
+    "sha256": null,
+    "size": 1783,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/run/eval/cell_dino/knn.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/run/eval/cell_dino/linear.py",
+    "sha256": null,
+    "size": 1819,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/run/eval/cell_dino/linear.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/run/eval/knn.py",
+    "sha256": null,
+    "size": 1719,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/run/eval/knn.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/run/eval/linear.py",
+    "sha256": null,
+    "size": 1748,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/run/eval/linear.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/run/eval/log_regression.py",
+    "sha256": null,
+    "size": 1814,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/run/eval/log_regression.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/run/submit.py",
+    "sha256": null,
+    "size": 3426,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/run/submit.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/run/train/train.py",
+    "sha256": null,
+    "size": 1724,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/run/train/train.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/thirdparty/CLIP/LICENSE",
+    "sha256": null,
+    "size": 1084,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/thirdparty/CLIP/LICENSE?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/thirdparty/CLIP/clip/simple_tokenizer.py",
+    "sha256": null,
+    "size": 5040,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/thirdparty/CLIP/clip/simple_tokenizer.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/train/__init__.py",
+    "sha256": null,
+    "size": 283,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/train/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/train/ssl_meta_arch.py",
+    "sha256": null,
+    "size": 19016,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/train/ssl_meta_arch.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/train/train.py",
+    "sha256": null,
+    "size": 11402,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/train/train.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/utils/__init__.py",
+    "sha256": null,
+    "size": 199,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/utils/__init__.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/utils/checkpoint.py",
+    "sha256": null,
+    "size": 2660,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/utils/checkpoint.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/utils/cluster.py",
+    "sha256": null,
+    "size": 3109,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/utils/cluster.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/utils/config.py",
+    "sha256": null,
+    "size": 2283,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/utils/config.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/utils/dtype.py",
+    "sha256": null,
+    "size": 1141,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/utils/dtype.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/utils/param_groups.py",
+    "sha256": null,
+    "size": 3864,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/utils/param_groups.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/dinov2/utils/utils.py",
+    "sha256": null,
+    "size": 3335,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/dinov2/utils/utils.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/hubconf.py",
+    "sha256": null,
+    "size": 1143,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/hubconf.py?download=true"
+  },
+  {
+    "destination": "models/vosr/torch_cache/facebookresearch_dinov2_main/setup.py",
+    "sha256": null,
+    "size": 2839,
+    "url": "https://huggingface.co/CSWRY/VOSR/resolve/f24b3061b7f350b81e1907bdcfc27f71fb4ff3f3/torch_cache/facebookresearch_dinov2_main/setup.py?download=true"
+  }
+]

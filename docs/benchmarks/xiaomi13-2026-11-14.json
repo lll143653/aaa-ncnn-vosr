@@ -1,0 +1,441 @@
+{
+  "date": "2026-11-14",
+  "device": "Xiaomi 13 / SM8550 / Adreno 740 / Android 13",
+  "model": "VOSR_0.5B_os",
+  "input": [
+    128,
+    128
+  ],
+  "output": [
+    512,
+    512
+  ],
+  "patches": 1,
+  "seed": 42,
+  "units": "milliseconds unless noted",
+  "notes": [
+    "Foreground samples ended in Awake / TOP.",
+    "Native wall time includes all model stages and host copies, excludes initialization and image preprocessing.",
+    "CPU layer function wall times exclude transfers and synchronization outside those functions.",
+    "Small sample counts; clocks and thermal state were not controlled."
+  ],
+  "foreground": [
+    {
+      "sample": "foreground-gpu-cold",
+      "backend": "gpu",
+      "detailedProfiling": false,
+      "residentReused": false,
+      "totalMs": 65137,
+      "pipelineMs": 39752,
+      "verificationMs": 2021,
+      "initializationMs": 22755,
+      "nativeMs": 38741,
+      "stageMs": [
+        6808.23,
+        3128.18,
+        194.966,
+        3222.39,
+        3276.9,
+        3304.36,
+        3279.17,
+        3228.98,
+        3313.5,
+        3293.62,
+        6.66656,
+        5670.35
+      ],
+      "pipeline": {
+        "regionDecoderOpen": 45.261667,
+        "pngOpen": 1.132396,
+        "regionDecodeAndBicubic": 306.627083,
+        "rgbNormalize": 13.52349,
+        "dinoResizeNormalize": 404.922084,
+        "noiseGenerate": 4.538072,
+        "jniInference": 38748.727381,
+        "patchCacheWrite": 9.260417,
+        "pngEncodeWrite": 39.673859999999955,
+        "stitchAndPng": 201.362708,
+        "pngFinalize": 0.356354,
+        "outputFinalize": 1.133021
+      },
+      "comparison": {
+        "pixelExact": false,
+        "psnrDb": 54.41771726016235
+      }
+    },
+    {
+      "sample": "foreground-gpu-warm-1",
+      "backend": "gpu",
+      "detailedProfiling": true,
+      "residentReused": true,
+      "totalMs": 39364,
+      "pipelineMs": 39361,
+      "verificationMs": 0,
+      "initializationMs": 0,
+      "nativeMs": 38480.7,
+      "stageMs": [
+        6598.1,
+        3102.2,
+        189.595,
+        3320.86,
+        3265.54,
+        3286.41,
+        3233.66,
+        3240.64,
+        3364.52,
+        3227.86,
+        7.19672,
+        5629.68
+      ],
+      "pipeline": {
+        "regionDecoderOpen": 2.53901,
+        "pngOpen": 0.301458,
+        "regionDecodeAndBicubic": 254.485834,
+        "rgbNormalize": 3.926354,
+        "dinoResizeNormalize": 391.595104,
+        "noiseGenerate": 4.682188,
+        "jniInference": 38492.385558,
+        "patchCacheWrite": 9.142656,
+        "pngEncodeWrite": 38.43437399999999,
+        "stitchAndPng": 199.771459,
+        "pngFinalize": 0.377708,
+        "outputFinalize": 0.170625
+      },
+      "comparison": {
+        "pixelExact": false,
+        "psnrDb": 54.41771726016235
+      }
+    },
+    {
+      "sample": "foreground-gpu-warm-2",
+      "backend": "gpu",
+      "detailedProfiling": true,
+      "residentReused": true,
+      "totalMs": 39343,
+      "pipelineMs": 39341,
+      "verificationMs": 0,
+      "initializationMs": 0,
+      "nativeMs": 38620.1,
+      "stageMs": [
+        6571.35,
+        3110.03,
+        189.013,
+        3276.35,
+        3314.08,
+        3319.4,
+        3261,
+        3263.9,
+        3270.53,
+        3272.37,
+        9.26443,
+        5749.35
+      ],
+      "pipeline": {
+        "regionDecoderOpen": 1.468281,
+        "pngOpen": 0.240833,
+        "regionDecodeAndBicubic": 231.330104,
+        "rgbNormalize": 8.311823,
+        "dinoResizeNormalize": 365.571823,
+        "noiseGenerate": 4.658386,
+        "jniInference": 38632.241235,
+        "patchCacheWrite": 7.108959,
+        "pngEncodeWrite": 37.29655800000005,
+        "stitchAndPng": 87.957657,
+        "pngFinalize": 0.43125,
+        "outputFinalize": 0.139844
+      },
+      "comparison": {
+        "pixelExact": false,
+        "psnrDb": 54.41771726016235
+      }
+    },
+    {
+      "sample": "foreground-npu-cold",
+      "backend": "npu",
+      "detailedProfiling": false,
+      "residentReused": false,
+      "totalMs": 6615,
+      "pipelineMs": 2241,
+      "verificationMs": 2097,
+      "initializationMs": 1813,
+      "nativeMs": 1585.36,
+      "stageMs": [
+        212.498,
+        87.7355,
+        7.52021,
+        149.715,
+        148.247,
+        148.924,
+        150.007,
+        149.398,
+        149.855,
+        150.328,
+        5.07839,
+        217.792
+      ],
+      "pipeline": {
+        "regionDecoderOpen": 6.379271,
+        "pngOpen": 0.50323,
+        "regionDecodeAndBicubic": 229.288854,
+        "rgbNormalize": 2.001979,
+        "dinoResizeNormalize": 312.825624,
+        "noiseGenerate": 1.109687,
+        "jniInference": 1589.056979,
+        "patchCacheWrite": 11.361823,
+        "pngEncodeWrite": 36.33271200000003,
+        "stitchAndPng": 84.707292,
+        "pngFinalize": 0.345885,
+        "outputFinalize": 0.125833
+      },
+      "comparison": {
+        "pixelExact": true,
+        "psnrDb": null
+      }
+    },
+    {
+      "sample": "foreground-npu-warm-1",
+      "backend": "npu",
+      "detailedProfiling": false,
+      "residentReused": true,
+      "totalMs": 2227,
+      "pipelineMs": 2225,
+      "verificationMs": 0,
+      "initializationMs": 0,
+      "nativeMs": 1576.97,
+      "stageMs": [
+        213.038,
+        87.3669,
+        7.24552,
+        152.458,
+        149.536,
+        146.616,
+        146.891,
+        147.993,
+        149.112,
+        148.238,
+        4.26958,
+        216.483
+      ],
+      "pipeline": {
+        "regionDecoderOpen": 1.407552,
+        "pngOpen": 0.246198,
+        "regionDecodeAndBicubic": 229.728333,
+        "rgbNormalize": 2.137136,
+        "dinoResizeNormalize": 310.116511,
+        "noiseGenerate": 1.109375,
+        "jniInference": 1579.090468,
+        "patchCacheWrite": 8.910886,
+        "pngEncodeWrite": 37.78394899999998,
+        "stitchAndPng": 89.300052,
+        "pngFinalize": 0.344844,
+        "outputFinalize": 0.142708
+      },
+      "comparison": {
+        "pixelExact": true,
+        "psnrDb": null
+      }
+    },
+    {
+      "sample": "foreground-npu-warm-2",
+      "backend": "npu",
+      "detailedProfiling": false,
+      "residentReused": true,
+      "totalMs": 2233,
+      "pipelineMs": 2231,
+      "verificationMs": 0,
+      "initializationMs": 0,
+      "nativeMs": 1586.9,
+      "stageMs": [
+        212.488,
+        89.0318,
+        7.22323,
+        149.273,
+        148.957,
+        148.829,
+        150.15,
+        149.747,
+        150.488,
+        151.04,
+        5.07807,
+        217.362
+      ],
+      "pipeline": {
+        "regionDecoderOpen": 1.419011,
+        "pngOpen": 0.213698,
+        "regionDecodeAndBicubic": 229.678281,
+        "rgbNormalize": 2.121041,
+        "dinoResizeNormalize": 310.967396,
+        "noiseGenerate": 1.012188,
+        "jniInference": 1589.706458,
+        "patchCacheWrite": 10.949791,
+        "pngEncodeWrite": 36.892917999999995,
+        "stitchAndPng": 82.20849,
+        "pngFinalize": 0.350573,
+        "outputFinalize": 0.128646
+      },
+      "comparison": {
+        "pixelExact": true,
+        "psnrDb": null
+      }
+    },
+    {
+      "sample": "foreground-npu-warm-3",
+      "backend": "npu",
+      "detailedProfiling": false,
+      "residentReused": true,
+      "totalMs": 2242,
+      "pipelineMs": 2240,
+      "verificationMs": 0,
+      "initializationMs": 0,
+      "nativeMs": 1588.69,
+      "stageMs": [
+        212.048,
+        87.6798,
+        7.24849,
+        149.6,
+        149.331,
+        148.857,
+        149.877,
+        151.039,
+        150.937,
+        151.442,
+        5.29089,
+        216.972
+      ],
+      "pipeline": {
+        "regionDecoderOpen": 1.375105,
+        "pngOpen": 0.299895,
+        "regionDecodeAndBicubic": 229.468437,
+        "rgbNormalize": 2.06323,
+        "dinoResizeNormalize": 310.8325,
+        "noiseGenerate": 1.108282,
+        "jniInference": 1591.921614,
+        "patchCacheWrite": 9.748489,
+        "pngEncodeWrite": 38.46657000000001,
+        "stitchAndPng": 90.254062,
+        "pngFinalize": 0.31224,
+        "outputFinalize": 0.150885
+      },
+      "comparison": {
+        "pixelExact": true,
+        "psnrDb": null
+      }
+    },
+    {
+      "sample": "foreground-npu-warm-4",
+      "backend": "npu",
+      "detailedProfiling": false,
+      "residentReused": true,
+      "totalMs": 2231,
+      "pipelineMs": 2228,
+      "verificationMs": 0,
+      "initializationMs": 0,
+      "nativeMs": 1590.96,
+      "stageMs": [
+        212.795,
+        87.2802,
+        7.23901,
+        150.67,
+        149.187,
+        148.659,
+        149.854,
+        150.999,
+        150.916,
+        151.406,
+        6.15422,
+        216.969
+      ],
+      "pipeline": {
+        "regionDecoderOpen": 1.722813,
+        "pngOpen": 0.310052,
+        "regionDecodeAndBicubic": 227.681718,
+        "rgbNormalize": 3.557083,
+        "dinoResizeNormalize": 304.61776,
+        "noiseGenerate": 0.906459,
+        "jniInference": 1593.828957,
+        "patchCacheWrite": 12.309532,
+        "pngEncodeWrite": 36.714113999999995,
+        "stitchAndPng": 80.757031,
+        "pngFinalize": 0.329479,
+        "outputFinalize": 0.113281
+      },
+      "comparison": {
+        "pixelExact": true,
+        "psnrDb": null
+      }
+    },
+    {
+      "sample": "foreground-npu-warm-5",
+      "backend": "npu",
+      "detailedProfiling": false,
+      "residentReused": true,
+      "totalMs": 2229,
+      "pipelineMs": 2227,
+      "verificationMs": 0,
+      "initializationMs": 0,
+      "nativeMs": 1588.39,
+      "stageMs": [
+        212.762,
+        87.2411,
+        7.27396,
+        149.511,
+        149.068,
+        149.121,
+        149.708,
+        150.987,
+        151.856,
+        151.006,
+        5.1613,
+        216.765
+      ],
+      "pipeline": {
+        "regionDecoderOpen": 1.409531,
+        "pngOpen": 0.240156,
+        "regionDecodeAndBicubic": 226.600417,
+        "rgbNormalize": 3.418229,
+        "dinoResizeNormalize": 304.415365,
+        "noiseGenerate": 0.930834,
+        "jniInference": 1590.947187,
+        "patchCacheWrite": 10.907292,
+        "pngEncodeWrite": 37.054586999999984,
+        "stitchAndPng": 84.296823,
+        "pngFinalize": 0.355365,
+        "outputFinalize": 0.129479
+      },
+      "comparison": {
+        "pixelExact": true,
+        "psnrDb": null
+      }
+    }
+  ],
+  "gpuCpuFallbackDiagnostic": {
+    "powerState": "Dozing",
+    "nativeMs": 42575.3,
+    "layers": [
+      {
+        "type": "MatMul",
+        "calls": 134,
+        "functionWallMs": 6477.535200000001
+      },
+      {
+        "type": "Reduction",
+        "calls": 85,
+        "functionWallMs": 77.24685200000002
+      }
+    ]
+  },
+  "stageOrder": [
+    "encoder",
+    "dino",
+    "dit_prepare",
+    "dit_blocks_00",
+    "dit_blocks_04",
+    "dit_blocks_08",
+    "dit_blocks_12",
+    "dit_blocks_16",
+    "dit_blocks_20",
+    "dit_blocks_24",
+    "dit_finish",
+    "decoder"
+  ]
+}
