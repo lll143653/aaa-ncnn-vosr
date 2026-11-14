@@ -1,0 +1,4 @@
+{
+  "graphs": [{ "graph_names": ["decoder"], "vtcm_mb": 8, "fp16_relaxed_precision": 1 }],
+  "devices": [{ "soc_model": 43, "dsp_arch": "v73" }]
+}

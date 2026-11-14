@@ -1,1 +1,3 @@
 *.ncnn.param -text
+app/android/gradlew text eol=lf
+app/android/gradlew.bat text eol=crlf

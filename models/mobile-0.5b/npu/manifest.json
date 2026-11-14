@@ -1,0 +1,217 @@
+{
+  "formatVersion": 1,
+  "model": "VOSR_0.5B_os",
+  "backend": "QNN_HTP_V73_FP16",
+  "tileSize": 512,
+  "deviceValidated": true,
+  "referencePsnrDb": 60.14579558391632,
+  "stages": [
+    {
+      "name": "encoder",
+      "label": "encoder",
+      "file": "encoder.bin",
+      "sha256": "8d684ba239ab3b9ce67ce28378b51f8af54f90deacdf341cc4ac0a949f5ed922",
+      "inputs": {
+        "rgb": "rgb"
+      },
+      "outputs": [
+        {
+          "name": "condition",
+          "binding": "condition",
+          "bytes": 65536
+        }
+      ]
+    },
+    {
+      "name": "dino",
+      "label": "dino",
+      "file": "dino.bin",
+      "sha256": "6d734ef075d0ad1491ef7c93bc3f1b1913c0f58075b1bfc91ac8ac0ccf95e87a",
+      "inputs": {
+        "image": "dino_input"
+      },
+      "outputs": [
+        {
+          "name": "features",
+          "binding": "features",
+          "bytes": 3145728
+        }
+      ]
+    },
+    {
+      "name": "dit_prepare",
+      "label": "dit_prepare",
+      "file": "dit_prepare.bin",
+      "sha256": "f31a39066b71eb10012a7cde2559ec1630acfcf4b1d7c52f4a1775693a8e5a6f",
+      "inputs": {
+        "condition": "condition",
+        "noise": "noise",
+        "features": "features"
+      },
+      "outputs": [
+        {
+          "name": "tokens",
+          "binding": "tokens",
+          "bytes": 4194304
+        },
+        {
+          "name": "context",
+          "binding": "context",
+          "bytes": 4194304
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_00",
+      "label": "dit_blocks_00",
+      "file": "dit_blocks_00.bin",
+      "sha256": "804b6bbcf4f144b3c04d9f05a61983d7665d304d79a4c6b35e7f6dab523f9b56",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 4194304
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_04",
+      "label": "dit_blocks_04",
+      "file": "dit_blocks_04.bin",
+      "sha256": "9989d093a2826d4074670c8065954bb60664aa30162a5c400e0da1de5b6d1179",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 4194304
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_08",
+      "label": "dit_blocks_08",
+      "file": "dit_blocks_08.bin",
+      "sha256": "e7397f06578c45d3299200192a1ca021bbe9129f189d731563d4e2ef4004972a",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 4194304
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_12",
+      "label": "dit_blocks_12",
+      "file": "dit_blocks_12.bin",
+      "sha256": "ef20a292fbe20928ab82f2aa95c75e55ce9b091aa2fa49f4d5b2676c000a10bc",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 4194304
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_16",
+      "label": "dit_blocks_16",
+      "file": "dit_blocks_16.bin",
+      "sha256": "b920c49184468ce4193d11b586c2e8d353fb3344e3f24042da37368da92970f6",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 4194304
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_20",
+      "label": "dit_blocks_20",
+      "file": "dit_blocks_20.bin",
+      "sha256": "5c9fa32478cd5f48e99f5fdc3c477a160d622477bb86f21bb5d052cf58c1818b",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 4194304
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_24",
+      "label": "dit_blocks_24",
+      "file": "dit_blocks_24.bin",
+      "sha256": "f1a4aee35a75279dac62598ab277cd5e6e224004e57d2483931a44e1bc58106a",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 4194304
+        }
+      ]
+    },
+    {
+      "name": "dit_finish",
+      "label": "dit_finish",
+      "file": "dit_finish.bin",
+      "sha256": "9db57c0eca3c3d8a816a4816f049beb5fca670f186bba2dedd6443ba21275948",
+      "inputs": {
+        "tokens": "tokens",
+        "noise": "noise"
+      },
+      "outputs": [
+        {
+          "name": "latent",
+          "binding": "latent",
+          "bytes": 65536
+        }
+      ]
+    },
+    {
+      "name": "decoder",
+      "label": "decoder",
+      "file": "decoder.bin",
+      "sha256": "df2bc0ef04a4eee856d8ec4473d899e700b2a2234d046d4943228a35fbd15f04",
+      "inputs": {
+        "latent": "latent"
+      },
+      "outputs": [
+        {
+          "name": "rgb",
+          "binding": "pixels",
+          "bytes": 3145728
+        }
+      ]
+    }
+  ]
+}

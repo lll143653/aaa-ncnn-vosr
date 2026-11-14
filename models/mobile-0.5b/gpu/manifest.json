@@ -1,0 +1,115 @@
+{
+  "model": "VOSR_0.5B_os",
+  "backend": "NCNN_VULKAN_FP16_WEIGHTS_FP32",
+  "tileSize": 512,
+  "converterVersion": "pnnx 20261020",
+  "runtimeVersion": "1.0.20260526",
+  "gpuProfile": {
+    "fp16Arithmetic": false,
+    "subgroupOps": false,
+    "winogradConvolution": false,
+    "hostReductionFallback": true
+  },
+  "conversionValidated": true,
+  "deviceValidated": true,
+  "stages": [
+    {
+      "name": "encoder",
+      "file": "encoder.ncnn.bin",
+      "bytes": 68379728,
+      "sha256": "8d2e9bfc9360842670f0f8e27efe9cf398bd5ffad95dffefd263caf40222e08c",
+      "param": "encoder.ncnn.param",
+      "paramSha256": "6e9d40aaba9e25c3d3914887a7caf77de2687f0fa1e0893e1efafac843d27646"
+    },
+    {
+      "name": "dino",
+      "file": "dino.ncnn.bin",
+      "bytes": 131750692,
+      "sha256": "bd02d767e40754d549d166cf5c05dbb1b9d505e21c8d8f268afd402978a3b280",
+      "param": "dino.ncnn.param",
+      "paramSha256": "ca51367f52b93e02d4c7a63b3cc3839b1532ae6b1437a7fc406e5904c2f7840c"
+    },
+    {
+      "name": "dit_prepare",
+      "file": "dit_prepare.ncnn.bin",
+      "bytes": 11094036,
+      "sha256": "b77c119edba545ade6a49a12ca1de3185f86c1edc056bf0c20fd0768ca33641e",
+      "param": "dit_prepare.ncnn.param",
+      "paramSha256": "0a460f2ecd03b659b6a44ff92530ef1bc3d6d7c759168b7d75e8255aa6e9c25a"
+    },
+    {
+      "name": "dit_blocks_00",
+      "file": "dit_blocks_00.ncnn.bin",
+      "bytes": 135044032,
+      "sha256": "4a7e857cc91adabea0d069a6154b6de5263438585a0aa9614e44a82dd84f9191",
+      "param": "dit_blocks_00.ncnn.param",
+      "paramSha256": "a8d3d4e10566f6f750eff3972d00c4799891c334ad8856eca5759a69e7adc016"
+    },
+    {
+      "name": "dit_blocks_04",
+      "file": "dit_blocks_04.ncnn.bin",
+      "bytes": 135044032,
+      "sha256": "b7436387f515d42f83c3440403041da8b5c44e42246da53b5e997d5a2cbefeb0",
+      "param": "dit_blocks_04.ncnn.param",
+      "paramSha256": "a8d3d4e10566f6f750eff3972d00c4799891c334ad8856eca5759a69e7adc016"
+    },
+    {
+      "name": "dit_blocks_08",
+      "file": "dit_blocks_08.ncnn.bin",
+      "bytes": 135044032,
+      "sha256": "e564aa1d0697801c2b6629b3b51438571b60e60a8690328e4209f567eea2c799",
+      "param": "dit_blocks_08.ncnn.param",
+      "paramSha256": "a8d3d4e10566f6f750eff3972d00c4799891c334ad8856eca5759a69e7adc016"
+    },
+    {
+      "name": "dit_blocks_12",
+      "file": "dit_blocks_12.ncnn.bin",
+      "bytes": 135044032,
+      "sha256": "36faae3aebcf95d144a7f2818769e9be173d47f9c50cf23f1bd02808e84a73de",
+      "param": "dit_blocks_12.ncnn.param",
+      "paramSha256": "a8d3d4e10566f6f750eff3972d00c4799891c334ad8856eca5759a69e7adc016"
+    },
+    {
+      "name": "dit_blocks_16",
+      "file": "dit_blocks_16.ncnn.bin",
+      "bytes": 135044032,
+      "sha256": "d1823529aade5d88d6ea6a771679d93677c23d32cadd781c640b5f98415ce8b2",
+      "param": "dit_blocks_16.ncnn.param",
+      "paramSha256": "a8d3d4e10566f6f750eff3972d00c4799891c334ad8856eca5759a69e7adc016"
+    },
+    {
+      "name": "dit_blocks_20",
+      "file": "dit_blocks_20.ncnn.bin",
+      "bytes": 135044032,
+      "sha256": "ea16ec345b2052d8446129ebe30b521abc228312aba54d3161f8c379d69cbca5",
+      "param": "dit_blocks_20.ncnn.param",
+      "paramSha256": "a8d3d4e10566f6f750eff3972d00c4799891c334ad8856eca5759a69e7adc016"
+    },
+    {
+      "name": "dit_blocks_24",
+      "file": "dit_blocks_24.ncnn.bin",
+      "bytes": 135044032,
+      "sha256": "fde06fe136dedf06f7704fdf6622a0630a5bffb3a53e3bca550051c8cbf5b3db",
+      "param": "dit_blocks_24.ncnn.param",
+      "paramSha256": "a8d3d4e10566f6f750eff3972d00c4799891c334ad8856eca5759a69e7adc016"
+    },
+    {
+      "name": "dit_finish",
+      "file": "dit_finish.ncnn.bin",
+      "bytes": 45612,
+      "sha256": "455abf986206ab5ec935fb39f04ea1f96544c7c8f36886391ca7270914db4b79",
+      "param": "dit_finish.ncnn.param",
+      "paramSha256": "68cadbd5889344341269eba950c40d67bfc03640a7663295d18d7b5678a9e44b"
+    },
+    {
+      "name": "decoder",
+      "file": "decoder.ncnn.bin",
+      "bytes": 26055604,
+      "sha256": "7259d8965cf5edf1b9504197b8dfbedd7a3319c8e5e37ff7c17fb1059ec4a619",
+      "param": "decoder.ncnn.param",
+      "paramSha256": "2bcf6752def15c4b9ce3656d7b512b0b8263ae8fb5001eff2f10efd9afc41290"
+    }
+  ],
+  "validatedDevice": "Xiaomi 13 / SM8550 / Adreno 740 / Android 13",
+  "validationReference": "docs/09-mobile-backend-acceptance.md"
+}

@@ -1,0 +1,20 @@
+{
+  "model_zips_verified": true,
+  "files": [
+    {
+      "file": "vosr-restore-debug.apk",
+      "bytes": 96640464,
+      "sha256": "bb80ed8942797c58a9b5a945ec89ac14c9ffe0bbe2ef976da5eaeb98684d7a7d"
+    },
+    {
+      "file": "vosr-0.5b-htp-v73-models.zip",
+      "bytes": 1257347674,
+      "sha256": "03e388a2171747bfec0c17974f1004ea1ffb6d8bb161f08c3dd81c34da2fb826"
+    },
+    {
+      "file": "vosr-0.5b-ncnn-vulkan-models.zip",
+      "bytes": 1182903112,
+      "sha256": "5ee32a917855c261078cb47e0493c66968b7c7617cf1befdaf4d9f466ce93bb8"
+    }
+  ]
+}
