@@ -25,7 +25,7 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
-            keepDebugSymbols += setOf("**/libQnn*.so", "**/libvosr_jni.so", "**/libvosr_gpu.so")
+            keepDebugSymbols += setOf("**/libQnn*.so", "**/libvosr_jni.so", "**/libvosr_gpu.so", "**/libvosr_photo.so")
         }
     }
 
@@ -41,6 +41,11 @@ kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
+}
+
+dependencies {
+    implementation("androidx.core:core:1.13.1")
+    implementation("androidx.exifinterface:exifinterface:1.4.1")
 }
 
 flutter {

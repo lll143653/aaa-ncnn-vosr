@@ -1,0 +1,62 @@
+{
+  "device": "Xiaomi 13 / SM8550",
+  "inputSource": "synthetic JPEG with explicit EXIF, not a system camera capture",
+  "results": [
+    {
+      "name": "missing",
+      "rejected": true
+    },
+    {
+      "name": "zoom9",
+      "rejected": true
+    },
+    {
+      "name": "zoom10-small",
+      "inputWidth": 100,
+      "inputHeight": 50,
+      "workingWidth": 832,
+      "workingHeight": 416,
+      "superResolutionWidth": 1664,
+      "superResolutionHeight": 832,
+      "width": 100,
+      "height": 50,
+      "scale": 2,
+      "overlap": 96,
+      "tiles": 8,
+      "elapsedMs": 39963,
+      "fusionMs": 328
+    },
+    {
+      "name": "zoom12-exif6",
+      "inputWidth": 751,
+      "inputHeight": 1001,
+      "workingWidth": 624,
+      "workingHeight": 832,
+      "superResolutionWidth": 1248,
+      "superResolutionHeight": 1664,
+      "width": 751,
+      "height": 1001,
+      "scale": 2,
+      "overlap": 96,
+      "tiles": 12,
+      "elapsedMs": 51824,
+      "fusionMs": 2584
+    },
+    {
+      "name": "zoom10-12mp",
+      "inputWidth": 4000,
+      "inputHeight": 3000,
+      "workingWidth": 832,
+      "workingHeight": 624,
+      "superResolutionWidth": 1664,
+      "superResolutionHeight": 1248,
+      "width": 4000,
+      "height": 3000,
+      "scale": 2,
+      "overlap": 96,
+      "tiles": 12,
+      "elapsedMs": 39915,
+      "fusionMs": 7105
+    }
+  ]
+}

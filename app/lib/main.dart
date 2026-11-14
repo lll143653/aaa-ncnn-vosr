@@ -30,7 +30,7 @@ class RestorePage extends StatefulWidget {
   State<RestorePage> createState() => _RestorePageState();
 }
 
-class _RestorePageState extends State<RestorePage> {
+class _RestorePageState extends State<RestorePage> with WidgetsBindingObserver {
   static const api = MethodChannel('ai.vosr/restore');
   static const events = EventChannel('ai.vosr/progress');
   StreamSubscription<dynamic>? subscription;
@@ -42,15 +42,22 @@ class _RestorePageState extends State<RestorePage> {
   int inputWidth = 0, inputHeight = 0;
   String selectedBackend = 'npu';
   bool checking = false, supported = true;
+  bool cameraMode = false, recoveringCamera = false;
+  double? cameraZoom;
   int patchCount(int length) =>
       length <= 512 ? 1 : ((length - 512 + 447) ~/ 448) + 1;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     subscription = events.receiveBroadcastStream().listen((dynamic value) {
       if (!mounted) return;
       final data = Map<String, dynamic>.from(value as Map);
+      if (data['cameraReady'] == true) {
+        recoverCamera();
+        return;
+      }
       setState(() {
         progress = (data['progress'] as num?)?.toDouble() ?? 0;
         message = data['message'] as String? ?? message;
@@ -64,7 +71,7 @@ class _RestorePageState extends State<RestorePage> {
         }
       });
     });
-    checkDevice();
+    checkDevice().then((_) => recoverCamera());
   }
 
   Future<void> checkDevice() async {
@@ -101,9 +108,74 @@ class _RestorePageState extends State<RestorePage> {
         output = null;
         backend = '尚未运行';
         message = '照片已就绪';
+        cameraMode = false;
+        cameraZoom = null;
       });
     } on PlatformException catch (error) {
       showError(error);
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && !busy && !checking) {
+      recoverCamera();
+    }
+  }
+
+  Future<void> acceptCamera(Map<String, dynamic> photo) async {
+    if (!mounted) return;
+    setState(() {
+      input = photo['path'] as String;
+      inputWidth = (photo['width'] as num).toInt();
+      inputHeight = (photo['height'] as num).toInt();
+      cameraZoom = (photo['zoomRatio'] as num).toDouble();
+      cameraMode = true;
+      scale = 2;
+      output = null;
+      busy = false;
+      message = '拍照完成，正在复原';
+    });
+    if (ready) await restore();
+  }
+
+  Future<void> takePhoto() async {
+    setState(() {
+      busy = true;
+      input = null;
+      output = null;
+      inputWidth = 0;
+      inputHeight = 0;
+      cameraMode = false;
+      cameraZoom = null;
+      message = '请在系统相机使用 ≥10× 拍摄';
+    });
+    try {
+      final photo = await api.invokeMapMethod<String, dynamic>('takePhoto');
+      if (photo != null && mounted) {
+        await acceptCamera(photo);
+      } else if (mounted) {
+        setState(() => message = '已取消拍照');
+      }
+    } on PlatformException catch (error) {
+      showError(error);
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> recoverCamera() async {
+    if (!mounted || busy || checking || recoveringCamera) return;
+    recoveringCamera = true;
+    try {
+      final photo = await api.invokeMapMethod<String, dynamic>(
+        'recoverCameraPhoto',
+      );
+      if (photo != null && mounted) await acceptCamera(photo);
+    } on PlatformException catch (error) {
+      showError(error);
+    } finally {
+      recoveringCamera = false;
     }
   }
 
@@ -143,12 +215,15 @@ class _RestorePageState extends State<RestorePage> {
       message = '正在准备复原';
     });
     try {
-      final result = await api.invokeMapMethod<String, dynamic>('restore', {
-        'path': input,
-        'scale': scale,
-        'seed': 42,
-        'backend': selectedBackend,
-      });
+      final result = await api.invokeMapMethod<String, dynamic>(
+        cameraMode ? 'restoreCamera' : 'restore',
+        {
+          'path': input,
+          'scale': cameraMode ? 2 : scale,
+          'seed': 42,
+          'backend': selectedBackend,
+        },
+      );
       if (!mounted) return;
       setState(() {
         output = result?['path'] as String?;
@@ -191,6 +266,7 @@ class _RestorePageState extends State<RestorePage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     subscription?.cancel();
     super.dispose();
   }
@@ -365,7 +441,7 @@ class _RestorePageState extends State<RestorePage> {
                   ButtonSegment(value: 4, label: Text('4×')),
                 ],
                 selected: {scale},
-                onSelectionChanged: busy
+                onSelectionChanged: busy || cameraMode
                     ? null
                     : (value) => setState(() => scale = value.first),
               ),
@@ -374,7 +450,9 @@ class _RestorePageState extends State<RestorePage> {
           const SizedBox(height: 12),
           Text(
             inputWidth > 0
-                ? '原图 $inputWidth×$inputHeight → ${inputWidth * scale}×${inputHeight * scale}，共 ${patchCount(inputWidth * scale) * patchCount(inputHeight * scale)} 块。保留原始分辨率，大图耗时更长。'
+                ? cameraMode
+                      ? '拍照复原 · ${cameraZoom?.toStringAsFixed(1)}× · 固定 2× 处理，结果保持 $inputWidth×$inputHeight'
+                      : '原图 $inputWidth×$inputHeight → ${inputWidth * scale}×${inputHeight * scale}，共 ${patchCount(inputWidth * scale) * patchCount(inputHeight * scale)} 块。保留原始分辨率，大图耗时更长。'
                 : '保留原始分辨率，按重叠 patch 逐块复原并拼接。',
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
@@ -403,6 +481,17 @@ class _RestorePageState extends State<RestorePage> {
               },
               child: const Text('取消处理'),
             ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: busy || checking || !ready ? null : takePhoto,
+            icon: const Icon(Icons.camera_alt_outlined),
+            label: const Text('拍照并复原（≥10×）'),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            '在系统相机设置 ≥10× 后拍摄。仅处理 EXIF 可验证的照片；结果保持拍照原尺寸。',
+            style: TextStyle(fontSize: 12),
+          ),
           const SizedBox(height: 10),
           Row(
             children: [

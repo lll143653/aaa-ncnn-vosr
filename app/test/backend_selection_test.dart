@@ -27,6 +27,7 @@ void main() {
         };
       }
       if (call.method == 'importModels') return false;
+      if (call.method == 'recoverCameraPhoto') return null;
       throw StateError('Unexpected call: ${call.method}');
     });
     addTearDown(() {

@@ -15,3 +15,7 @@ if (!(Test-Path -LiteralPath "$GpuToolchain\bin\clang++.exe")) { throw 'ncnn 官
 & "$GpuToolchain\bin\clang++.exe" '--target=aarch64-none-linux-android29' "--sysroot=$GpuToolchain\sysroot" '-std=c++17' '-O3' '-fPIC' '-shared' '-fvisibility=hidden' '-Wl,-z,max-page-size=16384' '-Wl,--no-undefined' '-static-libstdc++' '-fopenmp' '-static-openmp' "-I$NcnnSdk\include\ncnn" "$ProjectRoot\app\android\app\src\main\cpp\ncnn_jni.cpp" '-fno-rtti' "-L$NcnnSdk\lib" '-Wl,--start-group' '-lncnn' '-lglslang' '-lSPIRV' '-lMachineIndependent' '-lOSDependent' '-lGenericCodeGen' '-lglslang-default-resource-limits' '-Wl,--end-group' '-llog' '-ldl' '-landroid' '-o' $GpuOutput
 if ($LASTEXITCODE -ne 0) { throw 'Vulkan JNI native build failed' }
 Write-Output "GPU JNI: $GpuOutput"
+$PhotoOutput = "$ProjectRoot\app\android\app\src\main\jniLibs\arm64-v8a\libvosr_photo.so"
+& $Compiler '--target=aarch64-none-linux-android29' "--sysroot=$Sysroot" '-std=c++17' '-O3' '-fPIC' '-shared' '-fvisibility=hidden' '-Wl,-z,max-page-size=16384' '-Wl,--no-undefined' '-static-libstdc++' "$ProjectRoot\app\android\app\src\main\cpp\photo_jni.cpp" '-ljnigraphics' '-o' $PhotoOutput
+if ($LASTEXITCODE -ne 0) { throw 'Photo JNI build failed' }
+Write-Output "Photo JNI: $PhotoOutput"

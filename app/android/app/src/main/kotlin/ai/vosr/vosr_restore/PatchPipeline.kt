@@ -21,7 +21,6 @@ class PatchPipeline(
     private val cancelled: ()->Boolean
 ) {
     private val tile=512
-    private val stride=448
     private val plane=tile*tile
     private val costs=linkedMapOf<String,Double>()
     private val patchCosts=mutableListOf<Map<String,Any>>()
@@ -107,8 +106,10 @@ class PatchPipeline(
         }
     }
 
-    fun restore(input: File,scale: Int,seed: Long): Map<String,Any> {
+    fun restore(input: File,scale: Int,seed: Long,overlap: Int=64): Map<String,Any> {
         require(scale==2 || scale==4)
+        require(overlap in 1 until tile)
+        val stride=tile-overlap
         val started=System.nanoTime()
         val root=File(context.cacheDir,"restore-${UUID.randomUUID()}"); root.mkdirs()
         val output=File(context.cacheDir,"vosr_${System.currentTimeMillis()}.png")

@@ -4,4 +4,5 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <instrumentation android:name="ai.vosr.vosr_restore.CameraChecks" android:targetPackage="ai.vosr.vosr_restore" />
 </manifest>

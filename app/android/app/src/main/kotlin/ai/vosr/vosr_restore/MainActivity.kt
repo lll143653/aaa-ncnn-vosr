@@ -3,6 +3,8 @@ package ai.vosr.vosr_restore
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
+import android.content.ClipData
+import androidx.core.content.FileProvider
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -24,6 +26,13 @@ class MainActivity : FlutterActivity() {
     private var pickerResult: MethodChannel.Result? = null
     private var pickerKind = 0
     private var pickerBackend = "npu"
+    private val cameraPrefs by lazy { getSharedPreferences("camera",MODE_PRIVATE) }
+    private fun captureDirectory()=File(cacheDir,"captures").apply { mkdirs() }
+    private fun captureInput(path: String): File {
+        val file=File(path)
+        require(file.canonicalFile.parentFile==captureDirectory().canonicalFile && file.isFile) { "拍照文件无效，请重新拍摄" }
+        return file
+    }
     @Volatile private var activeRunner: QnnRunner? = null
     private fun modelDirectory(backend: String) = File(getExternalFilesDir(null), if (backend=="npu") "models" else "models-gpu").apply {
         check(isDirectory || mkdirs()) { "无法创建应用模型目录" }
@@ -45,6 +54,35 @@ class MainActivity : FlutterActivity() {
         MethodChannel(engine.dartExecutor.binaryMessenger, "ai.vosr/restore")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "takePhoto" -> {
+                        if(pickerResult!=null || processing.get()) result.error("BUSY","正在处理其他任务",null)
+                        else {
+                            val file=File.createTempFile("capture_",".jpg",captureDirectory())
+                            val uri=FileProvider.getUriForFile(this,"$packageName.camera-files",file)
+                            val camera=Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                                putExtra(MediaStore.EXTRA_OUTPUT,uri)
+                                addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                clipData=ClipData.newRawUri("VOSR capture",uri)
+                            }
+                            try {
+                                check(camera.resolveActivity(packageManager)!=null) { "没有可用的系统相机" }
+                                pickerResult=result; pickerKind=102
+                                cameraPrefs.edit().putString("pending",file.absolutePath).remove("completed").apply()
+                                startActivityForResult(camera,102)
+                            } catch(error: Exception) {
+                                file.delete(); pickerResult=null; cameraPrefs.edit().remove("pending").apply()
+                                result.error("CAMERA_ERROR",error.message,null)
+                            }
+                        }
+                    }
+                    "recoverCameraPhoto" -> background(result) {
+                        val path=cameraPrefs.getString("completed",null)
+                        if(path==null) null else {
+                            cameraPrefs.edit().remove("completed").apply()
+                            val file=captureInput(path)
+                            CameraPhoto.metadata(file)
+                        }
+                    }
                     "diagnostics" -> background(result) {
                         val backend=selectedBackend(call.argument<String>("backend"))
                         val gpu=try { JSONObject(NativeGpu.probe()) }
@@ -70,7 +108,7 @@ class MainActivity : FlutterActivity() {
                         }
                     }
                     "cancel" -> { activeRunner?.cancel(); result.success(null) }
-                    "restore" -> background(result, true) {
+                    "restore", "restoreCamera" -> background(result, true) {
                         val input = call.argument<String>("path") ?: error("没有选择照片")
                         val backend=selectedBackend(call.argument<String>("backend"))
                         if (backend=="npu") require(npuSupported()) { "当前 NPU 模型仅支持 SM8550 / HTP v73" }
@@ -79,7 +117,15 @@ class MainActivity : FlutterActivity() {
                         require(File(input).canonicalPath.startsWith(cacheDir.canonicalPath + File.separator)) { "图像路径无效" }
                         val runner = QnnRunner(this, modelDirectory(backend),backend) { value, label -> progress(value, label) }
                         activeRunner = runner
-                        try { runner.restore(File(input), scale, (call.argument<Int>("seed") ?: 42).toLong()) }
+                        try {
+                            val seed=(call.argument<Int>("seed") ?: 42).toLong()
+                            if(call.method=="restoreCamera") {
+                                require(scale==2) { "拍照复原只支持 2×" }
+                                CameraPipeline(this,{ value,label -> progress(value,label) },runner::isCancelled) { resized ->
+                                    runner.restore(resized,2,seed,96)
+                                }.run(captureInput(input))
+                            } else runner.restore(File(input), scale, seed)
+                        }
                         finally { activeRunner = null }
                     }
                     "saveImage" -> background(result) {
@@ -150,6 +196,29 @@ class MainActivity : FlutterActivity() {
     @Deprecated("Android result API is used by FlutterActivity")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode==102) {
+            val result=pickerResult; pickerResult=null
+            val path=cameraPrefs.getString("pending",null)
+            cameraPrefs.edit().remove("pending").apply()
+            val file=path?.let { File(it) }
+            if(file!=null) {
+                val uri=FileProvider.getUriForFile(this,"$packageName.camera-files",file)
+                revokeUriPermission(uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            if(resultCode!=Activity.RESULT_OK || file==null || file.length()==0L) {
+                file?.delete()
+                if(resultCode==Activity.RESULT_OK) result?.error("CAMERA_ERROR","系统相机没有返回完整照片，请重新拍摄",null)
+                else result?.success(null)
+                return
+            }
+            cameraPrefs.edit().putString("completed",file.absolutePath).apply()
+            if(result==null) { events?.success(mapOf("cameraReady" to true)); return }
+            background(result) {
+                try { CameraPhoto.metadata(captureInput(file.absolutePath)) }
+                finally { cameraPrefs.edit().remove("completed").apply() }
+            }
+            return
+        }
         if (requestCode != pickerKind) return
         val result = pickerResult ?: return
         pickerResult = null
@@ -184,19 +253,28 @@ class MainActivity : FlutterActivity() {
         if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
             val testInput = intent.getStringExtra("vosr_test_input")
             if (testInput != null) {
+              intent.removeExtra("vosr_test_input")
               window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
               worker.execute {
                 val destination = File(getExternalFilesDir(null), "app-test-result.json")
                 try {
                     val source = File(testInput)
                     require(source.canonicalPath.startsWith(getExternalFilesDir(null)!!.canonicalPath + File.separator))
-                    val imported=source.inputStream().use { importImage(it) }
+                    val cameraMode=intent.getBooleanExtra("vosr_test_camera",false)
+                    val imported=if(cameraMode) {
+                        val shot=File.createTempFile("capture_test_",".jpg",captureDirectory())
+                        source.copyTo(shot,overwrite=true); CameraPhoto.metadata(shot)
+                    } else source.inputStream().use { importImage(it) }
                     val local=File(imported["path"] as String)
                     val scale=intent.getIntExtra("vosr_test_scale",4)
                     val backend=selectedBackend(intent.getStringExtra("vosr_test_backend"))
                     val detailed=intent.getBooleanExtra("vosr_test_profile",false)
                     val firstProfileStage=intent.getIntExtra("vosr_test_profile_start_stage",0)
-                    val result = QnnRunner(this, modelDirectory(backend),backend,detailed,firstProfileStage) { value, label -> progress(value,label) }.restore(local,scale,42).toMutableMap()
+                    val runner=QnnRunner(this,modelDirectory(backend),backend,detailed,firstProfileStage) { value,label -> progress(value,label) }
+                    activeRunner=runner
+                    val result = if(cameraMode) CameraPipeline(this,{value,label -> progress(value,label)},runner::isCancelled) {
+                        runner.restore(it,2,42,96)
+                    }.run(local).toMutableMap() else runner.restore(local,scale,42).toMutableMap()
                     result["testRunId"]=intent.getStringExtra("vosr_test_run_id") ?: ""
                     if (intent.getBooleanExtra("vosr_test_save",false)) result["galleryUri"]=saveImage(File(result["path"] as String))
                     val shared = File(getExternalFilesDir(null), "app-test-output.png")
@@ -210,6 +288,7 @@ class MainActivity : FlutterActivity() {
                 } catch (error: Throwable) {
                     destination.writeText(JSONObject(mapOf("error" to (error.message ?: error.toString()))).toString(2))
                 } finally {
+                    activeRunner=null
                     runOnUiThread { window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
                 }
               }

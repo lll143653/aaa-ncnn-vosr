@@ -9,7 +9,7 @@ import java.io.Closeable
 import java.io.File
 import kotlin.math.*
 
-/** Original encoded image; only small regions are decoded, at inSampleSize=1. */
+/** Region reader. Gallery patches use full sampling; camera preparation may sample a whole frame. */
 @Suppress("DEPRECATION")
 class NativeImage(file: File) : Closeable {
     private val decoder = BitmapRegionDecoder.newInstance(file.absolutePath, false)
@@ -72,6 +72,27 @@ class NativeImage(file: File) : Closeable {
             result[plane*2+index]=blue.toFloat().coerceIn(0f,1f)
         }
         return result
+    }
+
+    fun render(left: Int,top: Int,outWidth: Int,outHeight: Int,fullWidth: Int,fullHeight: Int,sampled: Boolean=false): Bitmap {
+        require(outWidth>0 && outHeight>0 && fullWidth>0 && fullHeight>0)
+        val x0=(floor((left+.5)*width/fullWidth-.5).toInt()-2).coerceIn(0,width-1)
+        val y0=(floor((top+.5)*height/fullHeight-.5).toInt()-2).coerceIn(0,height-1)
+        val x1=(floor((left+outWidth-.5)*width/fullWidth-.5).toInt()+3).coerceIn(0,width-1)
+        val y1=(floor((top+outHeight-.5)*height/fullHeight-.5).toInt()+3).coerceIn(0,height-1)
+        val points=listOf(encoded(x0,y0),encoded(x1,y0),encoded(x0,y1),encoded(x1,y1))
+        val region=Rect(points.minOf{it.first},points.minOf{it.second},points.maxOf{it.first}+1,points.maxOf{it.second}+1)
+        var sample=1
+        while (sampled && sample<=512 && width.toLong()>=fullWidth.toLong()*sample*2 && height.toLong()>=fullHeight.toLong()*sample*2) sample*=2
+        val raw=decoder.decodeRegion(region,BitmapFactory.Options().apply { inSampleSize=sample; inPreferredConfig=Bitmap.Config.ARGB_8888 })
+            ?: error("无法读取拍照图像区域")
+        val output=Bitmap.createBitmap(outWidth,outHeight,Bitmap.Config.ARGB_8888)
+        try {
+            PhotoNative.resample(raw,output,region.left,region.top,region.width(),region.height(),encodedWidth,encodedHeight,
+                orientation,left,top,fullWidth,fullHeight)
+            return output
+        } catch(error: Throwable) { output.recycle(); throw error }
+        finally { raw.recycle() }
     }
 
     override fun close() { decoder.recycle() }

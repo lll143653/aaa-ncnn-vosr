@@ -104,6 +104,7 @@ class QnnRunner(private val context: Context, private val models: File, private 
     private val nativePatchProfiles = mutableListOf<String>()
     private val cancelled = java.util.concurrent.atomic.AtomicBoolean(false)
     @Volatile private var engineHandle=0L
+    fun isCancelled()=cancelled.get()
     fun cancel() {
         cancelled.set(true); val handle=engineHandle
         if (handle!=0L) { if (backend=="npu") NativeQnn.cancel(handle) else NativeGpu.cancel(handle) }
@@ -124,7 +125,7 @@ class QnnRunner(private val context: Context, private val models: File, private 
         return output
     }
 
-    fun restore(input: File, scale: Int, seed: Long): Map<String,Any> {
+    fun restore(input: File, scale: Int, seed: Long, overlap: Int=64): Map<String,Any> {
         val started=System.nanoTime()
         require(backend=="npu" || backend=="gpu") { "不支持的后端" }
         require(verifyBundle(models,backend)) { "模型缺失或校验失败，请重新导入所选后端的模型包" }
@@ -135,7 +136,7 @@ class QnnRunner(private val context: Context, private val models: File, private 
         if (backend=="npu") NativeQnn.profile(lease.handle,nativeProfile) else NativeGpu.profile(lease.handle,nativeProfile)
         if (backend=="npu") NativeQnn.resetCancel(lease.handle) else NativeGpu.resetCancel(lease.handle)
         if (cancelled.get()) throw java.util.concurrent.CancellationException("已取消处理")
-        val result=PatchPipeline(context,models,progress,::infer,timing) { cancelled.get() }.restore(input,scale,seed).toMutableMap()
+        val result=PatchPipeline(context,models,progress,::infer,timing) { cancelled.get() }.restore(input,scale,seed,overlap).toMutableMap()
         result["pipelineMs"]=result["elapsedMs"]!!
         result["elapsedMs"]=(System.nanoTime()-started)/1_000_000
         result["modelVerificationMs"]=verifiedMs

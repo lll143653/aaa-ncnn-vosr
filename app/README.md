@@ -17,6 +17,8 @@ Kotlin 文件位于 `android/app/src/main/kotlin/ai/vosr/vosr_restore/`，C++ �
 
 输入保持原始分辨率。2× / 4× 输出按 512×512 块、448 步长处理；高斯权重融合重叠区域，缓存当前和上一行的输出块，逐行写出 PNG。模型子图间通过内存传递张量，磁盘行缓存用于输出拼接。
 
+拍照另走 `CameraPhoto.kt` / `CameraPipeline.kt`：EXIF 数字变焦必须 ≥10×；输入等比例缩到最长边 832，固定 2×、输出块重叠 96，再缩回原图大小，与 LR 做五层高斯金字塔融合。`photo_jni.cpp` 负责区域重采样和融合，`PhotoNative.kt` 提供 JNI 接口。见 [阶段 12](../docs/12-camera-restoration.md)。
+
 NPU 使用 12 个 QNN context；GPU 使用 12 个 ncnn Net。切换后端会释放上一组会话。GPU 子图之间目前通过 CPU Mat 传递数据，尚未保持为 VkMat；其中 134 个 MatMul 和 85 个 Reduction 走 CPU。精度配置和性能见 [阶段 10](../docs/10-performance-profile.md)。
 
 模型导入按后端检查 manifest、文件名、大小限制和 SHA-256，校验完成后替换旧目录。手机上的 `models`、`models-gpu` 目录由应用创建；不要用 adb shell 提前创建，以免属主不匹配。

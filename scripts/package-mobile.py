@@ -61,6 +61,6 @@ def main():
             libraries.append({'name':file.name,'bytes':len(payload),'sha256':sha(file)})
     (OUT/'SHA256.json').write_text(json.dumps({'model_zips_verified':True,'files':[{'file':apk.name,'bytes':apk.stat().st_size,'sha256':sha(apk)},*records]},indent=2)+'\n')
     (ROOT/'evidence/apk-native-verification.json').write_text(json.dumps({'passed':True,'libraries':libraries},indent=2)+'\n')
-    print('PASS: model hashes, both offline ZIPs and six packaged native libraries')
+    print(f'PASS: model hashes, both offline ZIPs and {len(libraries)} packaged native libraries')
 
 if __name__=='__main__': main()
