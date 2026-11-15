@@ -40,6 +40,7 @@ class _RestorePageState extends State<RestorePage> with WidgetsBindingObserver {
   double progress = 0, divider = .5;
   int inputWidth = 0, inputHeight = 0;
   String selectedBackend = 'npu';
+  String backendDescription = 'Qualcomm HTP';
   bool checking = false, supported = true;
   bool cameraMode = false, recoveringCamera = false;
   double? cameraZoom;
@@ -97,6 +98,9 @@ class _RestorePageState extends State<RestorePage> with WidgetsBindingObserver {
         device = data?['device'] as String? ?? 'Android';
         ready = data?['ready'] == true;
         supported = data?['supported'] == true;
+        backendDescription =
+            data?['backendDescription'] as String? ??
+            (selectedBackend == 'npu' ? 'Qualcomm HTP' : 'ncnn Vulkan · 兼容模式');
         message = data?['message'] as String? ?? '请先导入模型文件';
       });
     } on PlatformException catch (error) {
@@ -428,9 +432,7 @@ class _RestorePageState extends State<RestorePage> with WidgetsBindingObserver {
           ),
           const SizedBox(height: 8),
           Text(
-            selectedBackend == 'npu'
-                ? 'Qualcomm HTP · 当前模型适配骁龙 8 Gen 2'
-                : 'ncnn Vulkan 兼容模式 · 处理较慢，小米 13 建议使用 NPU',
+            backendDescription,
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 16),

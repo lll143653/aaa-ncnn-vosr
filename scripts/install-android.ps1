@@ -14,20 +14,28 @@ $ApkFile = Join-Path $ProjectRoot 'deliverables\vosr-restore-debug.apk'
 if (!(Test-Path -LiteralPath $ApkFile)) { throw "APK 不存在：$ApkFile" }
 & $AdbExe @DeviceArgs get-state
 if ($LASTEXITCODE -ne 0) { throw '请连接并授权目标 Android 手机' }
+$DeviceSoc=((& $AdbExe @DeviceArgs shell getprop ro.soc.model) -join '').Trim().ToUpperInvariant()
+if (!$SkipModels -and $DeviceSoc -eq 'SM8850' -and $TileSize -ne 1024) { throw 'SM8850 使用 1024 输出模型' }
 & $AdbExe @DeviceArgs install --no-streaming -r $ApkFile
 if ($LASTEXITCODE -ne 0) { throw 'APK 安装失败，请查看手机是否要求允许 USB 安装' }
-& $AdbExe @DeviceArgs shell am start -n "$Package/.MainActivity"
+& $AdbExe @DeviceArgs shell am start -W -n "$Package/.MainActivity"
 if (!$SkipModels) {
     $SelectedBackends = if ($Backend -eq 'both') { @('npu','gpu') } else { @($Backend) }
     foreach ($SelectedBackend in $SelectedBackends) {
     $ModelFolder = if ($SelectedBackend -eq 'npu') { 'qnn' } else { 'ncnn-0.5b' }
+    if ($DeviceSoc -eq 'SM8850') { $ModelFolder=if($SelectedBackend -eq 'npu'){'qnn-sm8850'}else{'ncnn-sm8850'} }
     if ($TileSize -eq 1024) { $ModelFolder += '-1024' }
     $ModelRoot = Join-Path $ProjectRoot "artifacts\$ModelFolder"
     $ManifestPath = Join-Path $ModelRoot 'manifest.json'
     $Manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
+    if ($SelectedBackend -eq 'npu') {
+        $ModelSoc=if($Manifest.targetSoc){$Manifest.targetSoc}else{'SM8550'}
+        if($ModelSoc -ne $DeviceSoc){throw "NPU 模型 $ModelSoc 不匹配设备 $DeviceSoc"}
+    }
     if ($Manifest.tileSize -ne $TileSize) { throw '模型输出尺寸不匹配' }
     if (!$Manifest.deviceValidated) { throw "$SelectedBackend 模型未通过真机验证" }
     $DeviceFolder=if ($SelectedBackend -eq 'npu') { 'models' } else { 'models-gpu' }
+    if ($SelectedBackend -eq 'npu' -and $DeviceSoc -eq 'SM8850') { $DeviceFolder='models-sm8850' }
     if ($TileSize -eq 1024) { $DeviceFolder += '-1024' }
     $DeviceRoot = "/sdcard/Android/data/$Package/files/$DeviceFolder"
     $DirectoryReady = $false

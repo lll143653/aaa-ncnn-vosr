@@ -1,0 +1,21 @@
+{
+  "sdkVersion": "2.44.0.260225",
+  "source": "https://softwarecenter.qualcomm.com/api/download/software/sdks/Qualcomm_AI_Runtime_Community/All/2.44.0.260225/v2.44.0.260225.zip",
+  "files": [
+    {
+      "path": "lib/aarch64-android/libQnnHtpV81Stub.so",
+      "bytes": 755464,
+      "sha256": "f85cc467bda23b8253f085c4fa2680a1428e5b94c6c5a3e572abaa20c5b13ba1"
+    },
+    {
+      "path": "lib/hexagon-v81/unsigned/libQnnHtpV81Skel.so",
+      "bytes": 11797220,
+      "sha256": "66719325303f22562679edfed509d540cbff53ac59127b6e4ead84b62f1dc655"
+    },
+    {
+      "path": "lib/hexagon-v81/unsigned/libQnnHtpV81.so",
+      "bytes": 15314568,
+      "sha256": "9ded421928e479d97077adfa2a436f11b8f193e95dbb8de9c7e4dde1b87d9740"
+    }
+  ]
+}

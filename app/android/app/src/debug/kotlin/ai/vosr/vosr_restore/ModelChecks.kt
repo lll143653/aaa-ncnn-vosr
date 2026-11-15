@@ -25,7 +25,7 @@ class ModelChecks : Instrumentation() {
                 require(bytes.size%4==0)
                 return FloatArray(bytes.size/4).also { ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(it) }
             }
-            val models=File(targetContext.getExternalFilesDir(null),if(selected=="npu")"models-1024" else "models-gpu-1024")
+            val models=File(targetContext.getExternalFilesDir(null),if(selected=="npu")NpuTarget.current()?.folder(true) ?: error("Unsupported NPU") else "models-gpu-1024")
             val lease=ResidentEngine.acquire(targetContext,models,selected)
             val rgb=read("rgb"); val dino=read("dino_input"); val noise=read("noise")
             require(rgb.size==3*1024*1024 && noise.size==4*128*128)

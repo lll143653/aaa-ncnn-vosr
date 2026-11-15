@@ -1,0 +1,4 @@
+[
+  "lib/aarch64-android/libQnnHtpV81Stub\\.so$",
+  "lib/hexagon-v81/unsigned/(libQnnHtpV81(Skel)?\\.so|libqnnhtpv81\\.cat)$"
+]

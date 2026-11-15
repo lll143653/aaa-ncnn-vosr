@@ -51,6 +51,8 @@ class Engine {
     int tile=512;
     std::string directory;
     bool streamGraphs=false;
+    bool hostVaeFallback=false;
+    uint64_t storageBufferLimit=0;
     uint64_t netCreates=0;
     size_t maxResidentNets=0;
     double netLoadMs=0;
@@ -116,9 +118,10 @@ public:
         // Adreno 740 exposes 128 MiB per storage-buffer binding. The
         // 1024 VAE has 512 MiB feature maps; keep its encoder/decoder on
         // CPU rather than submitting invalid Vulkan descriptor ranges.
-        const bool hostVae=tile==1024 && (name=="encoder" || name=="decoder");
+        const bool largeVae=tile==1024 && (name=="encoder" || name=="decoder");
+        const bool hostVae=hostVaeFallback && largeVae;
         net->opt.use_vulkan_compute=!hostVae;
-        if(hostVae) net->opt.use_sgemm_convolution=false;
+        if(largeVae) net->opt.use_sgemm_convolution=false;
         // Match the original project's norm precision policy.
         net->opt.use_fp16_packed=false;
         net->opt.use_fp16_storage=false;
@@ -154,6 +157,8 @@ public:
         require(outputTile==512 || outputTile==1024,"Unsupported GPU output tile"); tile=outputTile;
         directory=modelDirectory; streamGraphs=tile==1024;
         initializeGpu(); require(gpuCount>0,"No Vulkan GPU available; CPU fallback is disabled");
+        storageBufferLimit=ncnn::get_gpu_info(ncnn::get_default_gpu_index()).physicalDeviceProperties().limits.maxStorageBufferRange;
+        hostVaeFallback=tile==1024 && storageBufferLimit<512ULL*1024*1024;
         auto start=Clock::now();
         nets.resize(names.size()); initializationTimes.resize(names.size());
         if(!streamGraphs) for(size_t i=0;i<names.size();i++) loadNet(i);
@@ -191,7 +196,7 @@ public:
         out<<"{\"engine\":\"NCNN_VULKAN_RESIDENT\",\"device\":\""<<gpuName()<<"\",\"contextCreateCount\":"<<netCreates<<",\"graphCount\":"<<nets.size()
            <<",\"modelLoadMs\":"<<loadMs<<",\"patchRunCount\":"<<count<<",\"lastPatchMs\":"<<runMs
            <<",\"hostReductionLayers\":"<<hostReductionLayers
-           <<",\"vaeBackend\":\""<<(tile==1024?"cpu-buffer-limit":"vulkan")<<"\""
+           <<",\"vaeBackend\":\""<<(hostVaeFallback?"cpu-buffer-limit":"vulkan")<<"\""<<",\"maxStorageBufferRange\":"<<storageBufferLimit
            <<",\"streamGraphs\":"<<(streamGraphs?"true":"false")<<",\"maxResidentNetCount\":"<<maxResidentNets<<",\"netLoadMs\":"<<netLoadMs
            <<",\"profilingEnabled\":"<<(profiling?"true":"false")<<",\"inputCopyMs\":"<<inputCopyMs<<",\"outputCopyMs\":"<<outputCopyMs
            <<",\"subprocessCount\":0,\"intermediateTensorFileBytes\":0,\"stageMs\":[";

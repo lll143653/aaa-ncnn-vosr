@@ -37,7 +37,8 @@ class QnnRunner(private val context: Context, private val models: File, private 
             if (verifiedPath == directory.absolutePath && verifiedStamp == manifest.lastModified()) return true
             try {
                 val data = JSONObject(manifest.readText())
-                require(data.getString("backend") == if (backend=="npu") "QNN_HTP_V73_FP16" else "NCNN_VULKAN_FP16_WEIGHTS_FP32")
+                if(backend=="npu") require(NpuTarget.current()?.accepts(data)==true) { "模型芯片与当前设备不匹配" }
+                else require(data.getString("backend")=="NCNN_VULKAN_FP16_WEIGHTS_FP32")
                 if (backend=="gpu") require(data.getString("model")=="VOSR_0.5B_os")
                 require(data.getInt("tileSize") in listOf(512,1024))
                 require(data.getBoolean(if (backend=="npu") "deviceValidated" else "conversionValidated"))
@@ -89,7 +90,7 @@ class QnnRunner(private val context: Context, private val models: File, private 
                         zip.closeEntry()
                     }
                 }
-                require(verifyBundle(temporary,backend,expectedTile)) { "模型文件校验失败，或模型包后端、输出尺寸不匹配" }
+                require(verifyBundle(temporary,backend,expectedTile)) { "模型文件校验失败，或芯片、后端、输出尺寸不匹配" }
                 ResidentEngine.close()
                 val backup = File(target.parentFile,"models-previous-${UUID.randomUUID()}")
                 if (target.exists()) require(target.renameTo(backup)) { "无法替换旧模型" }

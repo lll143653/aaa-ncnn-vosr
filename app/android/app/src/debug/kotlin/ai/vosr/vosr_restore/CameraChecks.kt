@@ -16,6 +16,13 @@ class CameraChecks : Instrumentation() {
         val checks=mutableListOf<String>()
         val folder=File(targetContext.cacheDir,"camera-checks").apply { mkdirs() }
         try {
+            val v73=NpuTarget.forSoc("SM8550")!!; val v81=NpuTarget.forSoc("SM8850")!!
+            val old=org.json.JSONObject().put("backend","QNN_HTP_V73_FP16")
+            val current=org.json.JSONObject().put("backend","QNN_HTP_V81_FP16").put("targetSoc","SM8850")
+            check(v73.accepts(old) && !v81.accepts(old) && v81.accepts(current) && !v73.accepts(current))
+            check(v81.extendedUdma && v81.streamDit && v73.streamDit && !v73.extendedUdma)
+            check(v81.folder(true)=="models-sm8850-1024" && NpuTarget.forSoc("unknown")==null)
+            checks.add("v73/v81 target matching, separate model directories and far-mapping policy")
             check(CameraPhoto.workingSize(4000,3000)==Pair(832,624))
             check(CameraPhoto.workingSize(3000,4000)==Pair(624,832))
             check(CameraPhoto.workingSize(100,50)==Pair(832,416))

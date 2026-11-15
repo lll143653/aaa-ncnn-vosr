@@ -5,7 +5,7 @@ import java.io.File
 
 internal object NativeQnn {
     init { System.loadLibrary("vosr_jni") }
-    @JvmStatic external fun create(models: String,nativeDirectory: String,detailed: Boolean,firstProfileStage: Int): Long
+    @JvmStatic external fun create(models: String,nativeDirectory: String,detailed: Boolean,firstProfileStage: Int,extendedUdma: Boolean,streamDit: Boolean): Long
     @JvmStatic external fun run(handle: Long,rgb: FloatArray,dino: FloatArray,noise: FloatArray): FloatArray
     @JvmStatic external fun stats(handle: Long): String
     @JvmStatic external fun resetCancel(handle: Long)
@@ -24,7 +24,12 @@ internal object ResidentEngine {
         if (handle!=0L && requested==key) return Lease(handle,true,0)
         close()
         val start=System.nanoTime()
-        val created=if (selected=="npu") NativeQnn.create(models.absolutePath,context.applicationInfo.nativeLibraryDir,detailed,firstProfileStage)
+        val created=if (selected=="npu") {
+                        val target=NpuTarget.current() ?: error("尚未适配此 NPU")
+                        val manifest=org.json.JSONObject(File(models,"manifest.json").readText())
+                        require(target.accepts(manifest)) { "NPU 模型芯片不匹配" }
+                        NativeQnn.create(models.absolutePath,context.applicationInfo.nativeLibraryDir,detailed,firstProfileStage,target.extendedUdma,target.streamDit)
+                    }
                     else NativeGpu.create(models.absolutePath,org.json.JSONObject(File(models,"manifest.json").readText()).getInt("tileSize"))
         check(created!=0L) { "NPU 常驻引擎初始化失败" }
         handle=created; key=requested; backend=selected

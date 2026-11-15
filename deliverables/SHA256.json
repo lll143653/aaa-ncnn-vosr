@@ -3,8 +3,18 @@
   "files": [
     {
       "file": "vosr-restore-debug.apk",
-      "bytes": 96645369,
-      "sha256": "7dda4a66172c84b2718a7271ebcce55107b1ee37a3f1120c7de4c8d2874fd0eb"
+      "bytes": 96645682,
+      "sha256": "11db72ab39f85ee6b0de764589e569d6aa946c48b560d33a964cedfeacf602ab"
+    },
+    {
+      "file": "vosr-0.5b-sm8850-htp-v81-1024-models.zip",
+      "bytes": 1587641451,
+      "sha256": "643336336fcebe401a727c412c9a2d765a6a9ded38d1a97e013407ae6761208e"
+    },
+    {
+      "file": "vosr-0.5b-sm8850-ncnn-vulkan-1024-models.zip",
+      "bytes": 1194212247,
+      "sha256": "8714b616d9a0a4b07be5e9f7b739de8f820c7faccbbcad3bc8e130d54f23dae0"
     },
     {
       "file": "vosr-0.5b-htp-v73-1024-models.zip",

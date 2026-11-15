@@ -35,7 +35,8 @@ class MainActivity : FlutterActivity() {
     }
     @Volatile private var activeRunner: QnnRunner? = null
     private fun modelDirectory(backend: String,large: Boolean=false) = File(getExternalFilesDir(null),
-        (if (backend=="npu") "models" else "models-gpu")+(if(large)"-1024" else "")).apply {
+        if(backend=="npu") NpuTarget.current()?.folder(large) ?: ("models"+(if(large)"-1024" else ""))
+        else "models-gpu"+(if(large)"-1024" else "")).apply {
         check(isDirectory || mkdirs()) { "无法创建应用模型目录" }
     }
     private fun selectedBackend(value: String?): String {
@@ -43,7 +44,7 @@ class MainActivity : FlutterActivity() {
         require(backend=="npu" || backend=="gpu") { "不支持的后端" }
         return backend
     }
-    private fun npuSupported() = Build.VERSION.SDK_INT>=31 && Build.SOC_MODEL.uppercase().contains("SM8550")
+    private fun npuSupported() = NpuTarget.current()!=null
 
     override fun configureFlutterEngine(engine: FlutterEngine) {
         super.configureFlutterEngine(engine)
@@ -93,6 +94,7 @@ class MainActivity : FlutterActivity() {
                         val ready = supported && QnnRunner.verifyBundle(modelDirectory(backend,true),backend,PhotoPlan.OUTPUT_TILE)
                         mapOf("device" to "${Build.MANUFACTURER} ${Build.MODEL}",
                             "ready" to ready,"supported" to supported,"gpu" to gpu.optString("device"),
+                            "backendDescription" to if(backend=="npu") NpuTarget.current()?.let { "Qualcomm HTP ${it.arch} · ${it.soc}" } else "${gpu.optString("device","Vulkan GPU")} · 部分算子使用 CPU",
                             "message" to if (!supported) "此设备不支持当前 ${backend.uppercase()} 后端" else if (ready) "${backend.uppercase()} 模型已就绪 · 512 输入 / 1024 输出" else "请导入 ${backend.uppercase()} 的 1024 输出模型包")
                     }
                     "pickImage", "importModels" -> {
@@ -112,7 +114,7 @@ class MainActivity : FlutterActivity() {
                     "restore", "restoreCamera", "restorePhoto" -> background(result, true) {
                         val input = call.argument<String>("path") ?: error("没有选择照片")
                         val backend=selectedBackend(call.argument<String>("backend"))
-                        if (backend=="npu") require(npuSupported()) { "当前 NPU 模型仅支持 SM8550 / HTP v73" }
+                        if (backend=="npu") require(npuSupported()) { "当前 NPU 支持 SM8550 / v73 和 SM8850 / v81" }
                         val scale = call.argument<Int>("scale") ?: 4
                         require(scale == 2 || scale == 4) { "不支持的放大倍数" }
                         require(File(input).canonicalPath.startsWith(cacheDir.canonicalPath + File.separator)) { "图像路径无效" }

@@ -17,10 +17,12 @@
 
 移动端模型包含 12 个子图。NPU 常驻其中 5 个，DiT 按组加载、执行后释放，避免大尺寸模型耗尽 DSP 地址空间；GPU 每次加载一个子图，用完释放。同一后端可复用引擎及配置，切换后端会释放旧会话。
 
-- **NPU**：QNN HTP v73，FP16 计算、FP32 输入输出。目前只验证并开放小米 13 / SM8550。
-- **GPU**：ncnn Vulkan，FP16 权重存储、FP32 计算。小米 13 的 128 MiB Vulkan 缓冲区限制使 1024 VAE 需要在 CPU 执行，DiT 也有部分算子回退 CPU，速度明显慢于 NPU。其它手机尚未验证。
+- **NPU**：QNN HTP，FP16 计算、FP32 输入输出。支持小米 13 / SM8550 / v73，以及 OPPO PMA110 / SM8850 / v81；模型包按芯片区分。
+- **GPU**：ncnn Vulkan，FP16 权重存储、FP32 计算。按实际缓冲区上限选择 VAE 路径：小米 13 的 128 MiB 上限需要 CPU VAE，PMA110 的约 2 GiB 上限可使用 GPU VAE。部分 MatMul、Reduction 仍在 CPU 执行。
 
 先安装 APK，再在应用里为所选后端导入对应模型 ZIP，选择照片后点击“开始复原”。当前 APK 和模型包保存在本地 `deliverables/`，没有上传到 Git；文件名及校验和见 [使用说明](deliverables/使用说明.md) 和 [SHA256.json](deliverables/SHA256.json)。源码构建见 [Android 文档](docs/android.md)。
+
+PMA110 的 12MP 四块 NPU 功能验收约 43.8 秒，四块原生调用为 6.9–7.3 秒/块；GPU 单次原生调用约 169 秒。该轮没有控制温度和频率，记录及加载波动见 [SM8850 适配](docs/15-sm8850-adaptation.md)。
 
 ## 小米 13 性能
 
@@ -41,6 +43,7 @@ NPU 的主要计算成本在 DiT，约 1.05 秒；CPU 图像预处理另约 0.54
 - [模型转换与仓库接入](docs/08-repository-integration.md)
 - [双后端真机测试](docs/09-mobile-backend-acceptance.md)
 - [性能 Profile](docs/10-performance-profile.md)
+- [SM8850 / Adreno 840 适配](docs/15-sm8850-adaptation.md)
 - [阶段文档索引](docs/STATUS.md)
 
 `docs/history/` 是接入本仓库前的开发记录，其中的路径和性能数字保留了当时的状态。当前用法以 Android 文档为准。

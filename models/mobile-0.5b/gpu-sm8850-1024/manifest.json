@@ -1,0 +1,130 @@
+{
+  "model": "VOSR_0.5B_os",
+  "backend": "NCNN_VULKAN_FP16_WEIGHTS_FP32",
+  "tileSize": 1024,
+  "converterVersion": "pnnx 20261020",
+  "runtimeVersion": "1.0.20260526",
+  "gpuProfile": {
+    "fp16Arithmetic": false,
+    "subgroupOps": false,
+    "winogradConvolution": false,
+    "hostReductionFallback": true,
+    "hostVaeFallback": false,
+    "maxStorageBufferRangeBytes": 2147483647,
+    "vaeCpuSgemmConvolution": false,
+    "streamGraphs": true,
+    "largeVaeSgemmConvolution": false
+  },
+  "conversionValidated": true,
+  "deviceValidated": true,
+  "stages": [
+    {
+      "name": "encoder",
+      "file": "encoder.ncnn.bin",
+      "bytes": 68379728,
+      "sha256": "8d2e9bfc9360842670f0f8e27efe9cf398bd5ffad95dffefd263caf40222e08c",
+      "param": "encoder.ncnn.param",
+      "paramSha256": "3f3b521af037c43f8e0e49eef53a4ea0679157c519793fd94a51ed2939ab61a3"
+    },
+    {
+      "name": "dino",
+      "file": "dino.ncnn.bin",
+      "bytes": 131750692,
+      "sha256": "bd02d767e40754d549d166cf5c05dbb1b9d505e21c8d8f268afd402978a3b280",
+      "param": "dino.ncnn.param",
+      "paramSha256": "ca51367f52b93e02d4c7a63b3cc3839b1532ae6b1437a7fc406e5904c2f7840c"
+    },
+    {
+      "name": "dit_prepare",
+      "file": "dit_prepare.ncnn.bin",
+      "bytes": 11094036,
+      "sha256": "b77c119edba545ade6a49a12ca1de3185f86c1edc056bf0c20fd0768ca33641e",
+      "param": "dit_prepare.ncnn.param",
+      "paramSha256": "7dc1b139b1b76b8fb6ba730a1f60623ba77b1accf4e43355bcac5146087132af"
+    },
+    {
+      "name": "dit_blocks_00",
+      "file": "dit_blocks_00.ncnn.bin",
+      "bytes": 136616896,
+      "sha256": "ee7bf4269b70fc9d92b8293a6bd3a430837254350a3445aed5282f04bbc25efc",
+      "param": "dit_blocks_00.ncnn.param",
+      "paramSha256": "6a94bebaac4c5f9982a18ef47d9823ff7a758345f019d2626b4426e19ee9651c"
+    },
+    {
+      "name": "dit_blocks_04",
+      "file": "dit_blocks_04.ncnn.bin",
+      "bytes": 136616896,
+      "sha256": "694f144626c43e567d36f494aafb7b47b91376819c8bcf599586f977feb5c6b5",
+      "param": "dit_blocks_04.ncnn.param",
+      "paramSha256": "6a94bebaac4c5f9982a18ef47d9823ff7a758345f019d2626b4426e19ee9651c"
+    },
+    {
+      "name": "dit_blocks_08",
+      "file": "dit_blocks_08.ncnn.bin",
+      "bytes": 136616896,
+      "sha256": "fb2d7d039ea521d066439ddd8bfc45d23303fb1e7d6936c7f4e4575f7d2df370",
+      "param": "dit_blocks_08.ncnn.param",
+      "paramSha256": "6a94bebaac4c5f9982a18ef47d9823ff7a758345f019d2626b4426e19ee9651c"
+    },
+    {
+      "name": "dit_blocks_12",
+      "file": "dit_blocks_12.ncnn.bin",
+      "bytes": 136616896,
+      "sha256": "cf5a29bfa4e0bdcc650df1fcf8cd75146429bca4b4d663d8ae85de75ef968a05",
+      "param": "dit_blocks_12.ncnn.param",
+      "paramSha256": "6a94bebaac4c5f9982a18ef47d9823ff7a758345f019d2626b4426e19ee9651c"
+    },
+    {
+      "name": "dit_blocks_16",
+      "file": "dit_blocks_16.ncnn.bin",
+      "bytes": 136616896,
+      "sha256": "aee06d923285f814a62f652f874a9fbb05d6f489eeda9ff402fe34bf3bfb7075",
+      "param": "dit_blocks_16.ncnn.param",
+      "paramSha256": "6a94bebaac4c5f9982a18ef47d9823ff7a758345f019d2626b4426e19ee9651c"
+    },
+    {
+      "name": "dit_blocks_20",
+      "file": "dit_blocks_20.ncnn.bin",
+      "bytes": 136616896,
+      "sha256": "0c9af8c77183b59aaf9053fbcd2319efaa62c73bfba3c0af433cbc1777af719a",
+      "param": "dit_blocks_20.ncnn.param",
+      "paramSha256": "6a94bebaac4c5f9982a18ef47d9823ff7a758345f019d2626b4426e19ee9651c"
+    },
+    {
+      "name": "dit_blocks_24",
+      "file": "dit_blocks_24.ncnn.bin",
+      "bytes": 136616896,
+      "sha256": "9d8faa915d4d66fe4793b4bbc47607e895bf4a6073dc5cc4fa31b764dfb2d3e7",
+      "param": "dit_blocks_24.ncnn.param",
+      "paramSha256": "6a94bebaac4c5f9982a18ef47d9823ff7a758345f019d2626b4426e19ee9651c"
+    },
+    {
+      "name": "dit_finish",
+      "file": "dit_finish.ncnn.bin",
+      "bytes": 45612,
+      "sha256": "455abf986206ab5ec935fb39f04ea1f96544c7c8f36886391ca7270914db4b79",
+      "param": "dit_finish.ncnn.param",
+      "paramSha256": "063fe6eb536127f1de1550aa692e4f656f840ba468db283e1720b90158f395c7"
+    },
+    {
+      "name": "decoder",
+      "file": "decoder.ncnn.bin",
+      "bytes": 26055604,
+      "sha256": "7259d8965cf5edf1b9504197b8dfbedd7a3319c8e5e37ff7c17fb1059ec4a619",
+      "param": "decoder.ncnn.param",
+      "paramSha256": "ab6b9f2aad20500ccf04c05fc4611ba1256079b4d342bb0bded4f749f995111d"
+    }
+  ],
+  "validatedDevice": "OPPO / PMA110 / SM8850 / 17",
+  "validationReference": "docs/15-sm8850-adaptation.md",
+  "validatedScope": "single 1024-output JNI pass; common four-patch photo pipeline validated on NPU",
+  "photoProfile": {
+    "longestSide": 832,
+    "inputTileSize": 512,
+    "inputOverlap": 96,
+    "inputStride": 416,
+    "scale": 2,
+    "outputTileSize": 1024,
+    "outputOverlap": 192
+  }
+}

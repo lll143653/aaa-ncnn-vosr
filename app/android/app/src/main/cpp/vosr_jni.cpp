@@ -96,6 +96,7 @@ class Engine {
   std::vector<double> lastTimes;
   double loadMs=0,lastRunMs=0;
   bool sharedScratch=false;
+  bool extendedUdma=false;
   bool streamDit=false;
   uint64_t contextCreates=0;
   size_t residentContexts=0,maxResidentContexts=0;
@@ -210,10 +211,17 @@ class Engine {
     group.groupRegistration.maxSpillFillBuffer=scratchMax;
     QnnContext_Config_t config=QNN_CONTEXT_CONFIG_INIT;
     config.option=QNN_CONTEXT_CONFIG_OPTION_CUSTOM; config.customConfig=&group;
-    const QnnContext_Config_t* configs[]={&config,nullptr};
+    QnnHtpContext_CustomConfig_t far=QNN_HTP_CONTEXT_CUSTOM_CONFIG_INIT;
+    far.option=QNN_HTP_CONTEXT_CONFIG_OPTION_USE_EXTENDED_UDMA; far.useExtendedUdma=true;
+    QnnContext_Config_t farConfig=QNN_CONTEXT_CONFIG_INIT;
+    farConfig.option=QNN_CONTEXT_CONFIG_OPTION_CUSTOM; farConfig.customConfig=&far;
+    std::vector<const QnnContext_Config_t*> configs;
+    if(sharedScratch) configs.push_back(&config);
+    if(extendedUdma) configs.push_back(&farConfig);
+    configs.push_back(nullptr);
     __android_log_print(ANDROID_LOG_INFO,"VOSR-QNN","Load %s: scratch %llu / shared %llu",session.name.c_str(),
         static_cast<unsigned long long>(session.scratchBytes),static_cast<unsigned long long>(scratchMax));
-    check(api.contextCreateFromBinary(backend,device,sharedScratch?configs:nullptr,session.binary->data,session.binary->size,&session.context,session.profile),"contextCreateFromBinary "+session.name);
+    check(api.contextCreateFromBinary(backend,device,configs.size()>1?configs.data():nullptr,session.binary->data,session.binary->size,&session.context,session.profile),"contextCreateFromBinary "+session.name);
     check(api.graphRetrieve(session.context,session.name.c_str(),&session.graph),"graphRetrieve "+session.name);
     contextCreates++; residentContexts++; maxResidentContexts=std::max(maxResidentContexts,residentContexts);
   }
@@ -233,9 +241,10 @@ public:
     if (htpLibrary) dlclose(htpLibrary);
     if (systemLibrary) dlclose(systemLibrary);
   }
-  void initialize(const std::string& directory,const std::string& nativeDirectory,bool detailed,int firstProfileStage) {
+  void initialize(const std::string& directory,const std::string& nativeDirectory,bool detailed,int firstProfileStage,bool useExtendedUdma,bool streamLargeDit) {
     auto start=Clock::now();
     profiling=detailed;
+    extendedUdma=useExtendedUdma;
     require(firstProfileStage>=0 && firstProfileStage<12,"Invalid first profile stage");
     profileStartStage=firstProfileStage;
     setenv("ADSP_LIBRARY_PATH",(nativeDirectory+";/vendor/dsp/cdsp;/vendor/lib/rfsa/adsp;/dsp").c_str(),1);
@@ -272,7 +281,7 @@ public:
       load(directory,names[i],i); initializationTimes.push_back(ms(stageStart));
     }
     sharedScratch=buffers.at("rgb").size()==3*1024*1024;
-    streamDit=sharedScratch;
+    streamDit=sharedScratch && streamLargeDit;
     if(sharedScratch) require(scratchMax>0,"Missing HTP scratch metadata for large tiles");
     for(size_t i=0;i<sessions.size();i++) {
       if(streamDit && i>=3 && i<=9) continue;
@@ -342,6 +351,7 @@ public:
        <<",\"powerVoteSupported\":"<<(powerReady?"true":"false")<<",\"boostVoteAccepted\":"<<(lastBoostAccepted?"true":"false")
        <<",\"sharedScratch\":"<<(sharedScratch?"true":"false")<<",\"scratchMaxBytes\":"<<scratchMax<<",\"scratchSumBytes\":"<<scratchSum
        <<",\"streamDit\":"<<(streamDit?"true":"false")<<",\"residentContextCount\":"<<residentContexts<<",\"maxResidentContextCount\":"<<maxResidentContexts
+       <<",\"extendedUdma\":"<<(extendedUdma?"true":"false")
        <<",\"contextLoadMs\":"<<contextLoadMs<<",\"contextFreeMs\":"<<contextFreeMs
        <<",\"profilingEnabled\":"<<(profiling?"true":"false")<<",\"inputCopyMs\":"<<inputCopyMs<<",\"outputCopyMs\":"<<outputCopyMs
        <<",\"profileStartStage\":"<<profileStartStage
@@ -371,9 +381,9 @@ void exception(JNIEnv* env,const std::exception& error) {
   if(!env->ExceptionCheck()) env->ThrowNew(env->FindClass("java/lang/IllegalStateException"),error.what());
 }
 }
-extern "C" JNIEXPORT jlong JNICALL Java_ai_vosr_vosr_1restore_NativeQnn_create(JNIEnv* env,jclass,jstring directory,jstring nativeDirectory,jboolean detailed,jint firstProfileStage) {
+extern "C" JNIEXPORT jlong JNICALL Java_ai_vosr_vosr_1restore_NativeQnn_create(JNIEnv* env,jclass,jstring directory,jstring nativeDirectory,jboolean detailed,jint firstProfileStage,jboolean extendedUdma,jboolean streamDit) {
   try {
-    auto engine=std::make_shared<Engine>(); engine->initialize(string(env,directory),string(env,nativeDirectory),detailed,firstProfileStage);
+    auto engine=std::make_shared<Engine>(); engine->initialize(string(env,directory),string(env,nativeDirectory),detailed,firstProfileStage,extendedUdma,streamDit);
     auto handle=nextHandle.fetch_add(1); std::lock_guard<std::mutex> lock(registryMutex); registry.emplace(handle,std::move(engine)); return handle;
   } catch(const std::exception& error) { exception(env,error); return 0; }
 }

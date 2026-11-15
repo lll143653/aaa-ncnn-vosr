@@ -18,8 +18,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--serial',default=os.environ.get('ANDROID_SERIAL'))
     parser.add_argument('--cases',nargs='+',help='Run selected case names and retain other recorded cases')
+    parser.add_argument('--output',type=Path,default=ROOT/'artifacts/camera-tests-1024')
     args=parser.parse_args()
-    out=ROOT/'artifacts/camera-tests-1024'; out.mkdir(exist_ok=True,parents=True)
+    out=args.output; out.mkdir(exist_ok=True,parents=True)
     def adb(*cmd):
         p=subprocess.run([str(ADB),*(['-s',args.serial] if args.serial else []),*map(str,cmd)],capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=50)
         if p.returncode: raise RuntimeError(p.stdout+p.stderr)

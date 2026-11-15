@@ -1,18 +1,20 @@
 # Android 构建与使用
 
-手机端使用官方 VOSR 0.5B 单步模型，与原桌面 1.4B 模型分开。应用为 ARM64、Android 10+；NPU 能力检查限定 SM8550 / HTP v73，已验证设备为小米 13。GPU 可枚举 Vulkan 设备，但目前也只在这台手机完成测试。
+手机端使用官方 VOSR 0.5B 单步模型，与原桌面 1.4B 模型分开。应用为 ARM64、Android 10+。已验证小米 13（SM8550 / HTP v73 / Adreno 740）和 OPPO PMA110（SM8850 / HTP v81 / Adreno 840）；NPU 模型按芯片区分，GPU 按设备缓冲区上限选择 VAE 路径。
 
 ## 安装和模型
 
-本地 `deliverables/` 中有三个文件，大文件没有提交到 Git，也还没有发布 GitHub Release：
+本地 `deliverables/` 包含下列文件，大文件没有提交到 Git，也还没有发布 GitHub Release：
 
 | 文件 | 用途 |
 | --- | --- |
 | `vosr-restore-debug.apk` | 含两个推理后端的开发版应用 |
 | `vosr-0.5b-htp-v73-1024-models.zip` | NPU 模型包，512 LR 输入块 / 1024 输出块 |
 | `vosr-0.5b-ncnn-vulkan-1024-models.zip` | GPU 模型包，同一输入、输出规格 |
+| `vosr-0.5b-sm8850-htp-v81-1024-models.zip` | PMA110 的 NPU 模型包，同一规格 |
+| `vosr-0.5b-sm8850-ncnn-vulkan-1024-models.zip` | PMA110 已验证的 GPU 模型包，权重相同 |
 
-安装 APK，在“推理后端”选择 NPU 或 GPU，导入对应的 1024 ZIP，然后选择照片。两个后端的 ZIP 不能混用；旧 512 输出模型也不适用于新流程。处理结果可对比并保存到相册 `Pictures/VOSR`。小米 13 上建议使用 NPU。
+安装 APK，在“推理后端”选择 NPU 或 GPU，导入对应设备的 1024 ZIP，然后选择照片。不同芯片的 NPU 包、两个后端的 ZIP 不能混用；旧 512 输出模型也不适用于新流程。处理结果可对比并保存到相册 `Pictures/VOSR`。两台已验证手机均建议使用 NPU。
 
 模型就绪后也可点击“拍照并复原（≥10×）”。相机照片按 EXIF 严格校验，使用固定 832 / 96 重叠 / 2× 处理和原尺寸金字塔融合，具体规则见 [拍照复原](12-camera-restoration.md)。
 
@@ -52,7 +54,7 @@ E:\work\ai\tools\android-sdk\platform-tools\adb.exe devices
 .\scripts\install-android.ps1 -Serial <设备序列号> -SkipModels
 ```
 
-安装使用 `--no-streaming`。`-SkipModels` 保留手机中已有模型；首次可在应用内导入 ZIP。若本机已有经过验证的 `artifacts/qnn-1024` 和 `artifacts/ncnn-0.5b-1024`，也可去掉 `-SkipModels`，由脚本校验并复制模型。`-TileSize 512` 仅供历史调试流程回归。
+安装使用 `--no-streaming`。`-SkipModels` 保留手机中已有模型；首次可在应用内导入 ZIP。也可去掉 `-SkipModels`，由脚本按设备 SoC 校验并复制模型：SM8550 使用 `artifacts/qnn-1024` 和 `artifacts/ncnn-0.5b-1024`，SM8850 使用 `artifacts/qnn-sm8850-1024` 和 `artifacts/ncnn-sm8850-1024`。`-TileSize 512` 仅供小米 13 的历史调试流程回归。
 
 ## 从官方权重转换
 
@@ -73,6 +75,8 @@ NPU 转换使用 `conversion/build_qnn.py --onnx artifacts/onnx-1024 --native-va
 
 移动端共 12 个子图：VAE encoder、DINO、DiT prepare、7 组四层 DiT、DiT finish、LightDecoder。模型清单保存在 `models/mobile-0.5b/`，大权重与中间文件保存在被 Git 忽略的 `artifacts/`。两个后端的转换和数值边界见 [阶段 8](08-repository-integration.md)。
 
+SM8850 的编译目标改为 `--soc-model 87 --dsp-arch v81 --vtcm-mb 0 --extended-udma`，需补齐同版本 v81 运行库，完整命令及验证见 [阶段 15](15-sm8850-adaptation.md)。旧 v73 context 不能直接使用。
+
 ## 测试和 Profile
 
 ```powershell
@@ -91,9 +95,11 @@ Profile 的采集、普通计时与详细事件、前台/休眠分组见 [阶段
 
 原始日志和 Perfetto trace 较大，留在本地 `artifacts/`、`evidence/`，不在 Git 中。仓库保留固定回归图片、模型清单、测试报告和采集脚本。`package-mobile.py --apk-only` 会验证已有模型 ZIP 并更新 APK 校验和，不重新打包模型。
 
+SM8850 的测试脚本自动使用独立证据目录，打包时添加 `--soc SM8850`。本轮验收运行 NPU 四块整图与 GPU 单次完整 JNI；GPU 测试使用 `--backends gpu --raw-only`。PMA110 的 NPU 12MP 样例为 43.8 秒、GPU 单块约 169 秒，均为未控制温度和频率的功能验收记录，加载波动及范围见阶段 15。
+
 ## 已知限制
 
-- NPU context 针对 SM8550 / HTP v73，其它高通芯片需要重新转换和验证。
+- NPU context 分别针对 SM8550 / HTP v73 和 SM8850 / HTP v81，其它高通芯片需要重新转换和验证。
 - GPU 为兼容配置：关闭 Winograd、subgroup、cooperative matrix；部分 MatMul、Reduction 在 CPU 执行，子图间也存在 CPU Mat 传递。当前速度不适合用来替代小米 13 上的 NPU 路径。
 - ncnn 20261020 的 Vulkan 数值测试、旧 pnnx 的 DiT 转换没有通过，因此运行库和转换器采用不同版本，不能只改版本号就视作完成升级。
 - 当前使用开发签名。完整发布流程、更多机型和长时间温控测试尚未完成。

@@ -20,9 +20,9 @@ Kotlin 文件位于 `android/app/src/main/kotlin/ai/vosr/vosr_restore/`，C++ �
 
 拍照入口通过 `CameraPhoto.kt` 严格校验 EXIF 数字变焦 ≥10×，普通相册选图不受此相机门槛限制。之后两者共用处理流程。`photo_jni.cpp` 负责区域重采样和融合，`PhotoNative.kt` 提供 JNI 接口。见[阶段 14](../docs/14-input-patch-512.md)。
 
-模型含 12 个子图。1024 输出规格的 NPU 共享 spill/fill 工作区，常驻 5 个 context，7 组 DiT 顺序加载并释放，最多同时保留 6 个；GPU 一次只保留一个 Net，大尺寸 VAE 放在 CPU，其余部分使用 Vulkan 和原有 CPU 算子回退。旧 512 输出模型仍保留全部 12 个常驻会话。切换后端会释放旧会话。阶段 10 的算子数量及计时属于旧 512 输出规格。
+模型含 12 个子图。1024 输出规格的 NPU 共享 spill/fill 工作区，常驻 5 个 context，7 组 DiT 顺序加载并释放，最多同时保留 6 个；SM8850 另启用 v81 far mapping。GPU 一次只保留一个 Net，根据实际存储缓冲上限选择 GPU 或 CPU VAE。旧 512 输出模型仍保留全部 12 个常驻会话。切换后端会释放旧会话。阶段 10 的算子数量及计时属于旧 512 输出规格。
 
-模型导入按后端检查 manifest、输出规格、文件名、大小限制和 SHA-256，校验完成后替换旧目录。手机上的 `models-1024`、`models-gpu-1024` 目录由应用创建；不要用 adb shell 提前创建，以免属主不匹配。旧 `models`、`models-gpu` 保留给历史调试入口。
+模型导入检查芯片、后端、输出规格、文件名、大小限制和 SHA-256。`NpuTarget.kt` 区分 SM8550/v73 和 SM8850/v81，NPU 分别使用 `models-1024`、`models-sm8850-1024`；GPU 使用 `models-gpu-1024`。目录由应用创建，不要用 adb shell 提前创建。旧 `models`、`models-gpu` 保留给历史调试入口。
 
 从仓库根目录执行本地检查：
 

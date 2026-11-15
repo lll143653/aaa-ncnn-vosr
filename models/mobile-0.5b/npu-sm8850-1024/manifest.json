@@ -1,0 +1,237 @@
+{
+  "formatVersion": 1,
+  "model": "VOSR_0.5B_os",
+  "backend": "QNN_HTP_V81_FP16",
+  "tileSize": 1024,
+  "targetSoc": "SM8850",
+  "socModelId": 87,
+  "dspArch": "v81",
+  "extendedUdma": true,
+  "deviceValidated": true,
+  "referencePsnrDb": 60.160777266777245,
+  "stages": [
+    {
+      "name": "encoder",
+      "label": "encoder",
+      "file": "encoder.bin",
+      "sha256": "93170f4cb95dde607b409d9b3dcf020ae1b817f5fc7268c5827a0cc44c89460e",
+      "inputs": {
+        "rgb": "rgb"
+      },
+      "outputs": [
+        {
+          "name": "condition",
+          "binding": "condition",
+          "bytes": 262144
+        }
+      ]
+    },
+    {
+      "name": "dino",
+      "label": "dino",
+      "file": "dino.bin",
+      "sha256": "fcf68b3f7a4de4e743dca548b20976c798b32e6ab06c5d72445851b6f27ecc1a",
+      "inputs": {
+        "image": "dino_input"
+      },
+      "outputs": [
+        {
+          "name": "features",
+          "binding": "features",
+          "bytes": 3145728
+        }
+      ]
+    },
+    {
+      "name": "dit_prepare",
+      "label": "dit_prepare",
+      "file": "dit_prepare.bin",
+      "sha256": "3f659b6874def42cff34318372e953525e2fdcb49daa88ae693accfa508bad15",
+      "inputs": {
+        "condition": "condition",
+        "noise": "noise",
+        "features": "features"
+      },
+      "outputs": [
+        {
+          "name": "tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        },
+        {
+          "name": "context",
+          "binding": "context",
+          "bytes": 4194304
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_00",
+      "label": "dit_blocks_00",
+      "file": "dit_blocks_00.bin",
+      "sha256": "4bdbf9eaa2d6b851b7068948d97eddb00755872b8c18307cab5718c5779f76f2",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_04",
+      "label": "dit_blocks_04",
+      "file": "dit_blocks_04.bin",
+      "sha256": "2ab78f052d9ba69fd0070bc125f0b12f156e97d369a7ba803974232e4bb8feba",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_08",
+      "label": "dit_blocks_08",
+      "file": "dit_blocks_08.bin",
+      "sha256": "106d23574f6ab290f7b2dfce0d23dfa890ba985de555894fb904998dfd9a0d31",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_12",
+      "label": "dit_blocks_12",
+      "file": "dit_blocks_12.bin",
+      "sha256": "b510627d26bdf643a754ae6a607aa717480a213b4b0c698af1fe1a76ae2085b9",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_16",
+      "label": "dit_blocks_16",
+      "file": "dit_blocks_16.bin",
+      "sha256": "f302420aef79a23b559d82c73547062b923b4a6062c2f7e5e24039339ee8e2f7",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_20",
+      "label": "dit_blocks_20",
+      "file": "dit_blocks_20.bin",
+      "sha256": "aa6fc97164bfbe7d02b6b2e6e069a0684771287bcf57afcf8ccc61461e8c5511",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_24",
+      "label": "dit_blocks_24",
+      "file": "dit_blocks_24.bin",
+      "sha256": "715fac035b2924def7c34d32a0408b5b3355bca247f73305d94b1009a738d9d2",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_finish",
+      "label": "dit_finish",
+      "file": "dit_finish.bin",
+      "sha256": "c9b5685149bc48cbfc0855e95e557b4c78f64d9133cf020f9afa7b1cf92563d7",
+      "inputs": {
+        "tokens": "tokens",
+        "noise": "noise"
+      },
+      "outputs": [
+        {
+          "name": "latent",
+          "binding": "latent",
+          "bytes": 262144
+        }
+      ]
+    },
+    {
+      "name": "decoder",
+      "label": "decoder",
+      "file": "decoder.bin",
+      "sha256": "aacd2b7bf2db054907fa68f94b4f1943b54c133d6ace54849d8000ee789ea2cc",
+      "inputs": {
+        "latent": "latent"
+      },
+      "outputs": [
+        {
+          "name": "rgb",
+          "binding": "pixels",
+          "bytes": 12582912
+        }
+      ]
+    }
+  ],
+  "validatedDevice": "OPPO / PMA110 / SM8850 / 17",
+  "validationReference": "docs/15-sm8850-adaptation.md",
+  "photoProfile": {
+    "longestSide": 832,
+    "inputTileSize": 512,
+    "inputOverlap": 96,
+    "inputStride": 416,
+    "scale": 2,
+    "outputTileSize": 1024,
+    "outputOverlap": 192
+  },
+  "runtimePolicy": {
+    "extendedUdma": true,
+    "streamDit": true,
+    "maxResidentContexts": 6
+  }
+}

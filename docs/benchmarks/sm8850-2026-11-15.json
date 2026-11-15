@@ -1,0 +1,99 @@
+{
+  "date": "2026-11-15",
+  "device": {
+    "manufacturer": "OPPO",
+    "model": "PMA110",
+    "soc": "SM8850",
+    "gpu": "Adreno 840",
+    "android": "17",
+    "api": 37,
+    "pageBytes": 4096,
+    "memoryTotalKb": 11344756,
+    "maxStorageBufferRange": 2147483647
+  },
+  "conditions": "Functional acceptance, single samples; temperature and frequencies not controlled; NPU photo ended Awake",
+  "geometry": {
+    "longestSide": 832,
+    "inputTile": 512,
+    "inputOverlap": 96,
+    "inputStride": 416,
+    "scale": 2,
+    "outputTile": 1024,
+    "outputOverlap": 192
+  },
+  "npu": {
+    "backend": "QNN_HTP_V81_FP16",
+    "pixelPsnrVsFp32Db": 60.1607164933392,
+    "originalSize": [
+      4000,
+      3000
+    ],
+    "workingSize": [
+      832,
+      624
+    ],
+    "tiles": 4,
+    "nativePatchMs": [
+      7272.72,
+      6903.56,
+      7114.39,
+      6970.53
+    ],
+    "totalMs": 43823,
+    "fusionMs": 4226,
+    "modelVerificationMs": 1184,
+    "initializationMs": 847,
+    "pipelineBreakdownMs": {
+      "regionDecoderOpen": 3.142865,
+      "pngOpen": 0.363437,
+      "regionDecodeAndBicubic": 3832.933331,
+      "rgbNormalize": 76.58395999999999,
+      "dinoResizeNormalize": 2444.441249,
+      "noiseGenerate": 60.443645000000004,
+      "jniInference": 28271.293062,
+      "patchCacheWrite": 31.907344000000002,
+      "pngEncodeWrite": 140.38273600000005,
+      "stitchAndPng": 2682.6513019999998,
+      "pngFinalize": 0.160261,
+      "outputFinalize": 0.032968
+    },
+    "extendedUdma": true,
+    "maxResidentContexts": 6,
+    "streamDit": true,
+    "lastGraphExecuteSumMs": 4166.590840000001,
+    "lastContextLoadMs": 2770.84,
+    "lastContextFreeMs": 27.1773,
+    "rawJniMs": 69056.1,
+    "rawJniContextLoadMs": 64400.9,
+    "rawJniLoadingOutlier": true,
+    "savedToMediaStore": true
+  },
+  "gpu": {
+    "scope": "one complete JNI pass; common four-patch photo pipeline tested on NPU",
+    "pixelPsnrVsFp32Db": 81.99620503976601,
+    "nativeMs": 168928,
+    "stageMs": [
+      97456.2,
+      2761.71,
+      486.13,
+      10007.6,
+      7612.93,
+      7550.76,
+      7768.1,
+      7713.26,
+      7879.94,
+      8402.94,
+      638.711,
+      10531
+    ],
+    "netLoadMs": 13668,
+    "vaeBackend": "vulkan",
+    "maxResidentNets": 1,
+    "streamGraphs": true
+  },
+  "limits": [
+    "All 12 NPU contexts resident failed at dit_blocks_12 with status 1007; use five pinned plus one transient",
+    "One JNI sample had 64.4 seconds in context loading; four-patch photo sample was stable",
+    "System camera real-photo EXIF not tested on PMA110; strict EXIF and native fusion checks passed"
+  ]
+}

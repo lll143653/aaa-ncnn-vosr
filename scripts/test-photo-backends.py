@@ -22,13 +22,21 @@ def main():
     parser.add_argument('--backends',nargs='+',choices=['npu','gpu'],default=['npu','gpu'])
     parser.add_argument('--deploy',action='store_true')
     parser.add_argument('--raw-only',action='store_true',help='Validate model JNI output only; common photo tiling is separately checked on NPU')
+    parser.add_argument('--output',type=Path)
+    parser.add_argument('--npu-models',type=Path)
+    parser.add_argument('--gpu-models',type=Path)
+    parser.add_argument('--validation-reference')
     args=parser.parse_args()
-    out=ROOT/'artifacts/photo-tests-1024'; out.mkdir(parents=True,exist_ok=True)
     reference=ROOT/'artifacts/reference-1024'
     def adb(*cmd,timeout=60):
         p=subprocess.run([str(ADB),*(['-s',args.serial] if args.serial else []),*map(str,cmd)],capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=timeout)
         if p.returncode: raise RuntimeError(p.stdout+p.stderr)
         return p.stdout
+    soc=adb('shell','getprop','ro.soc.model').strip().upper()
+    validation_reference=args.validation_reference or ('docs/15-sm8850-adaptation.md' if soc=='SM8850' else 'docs/14-input-patch-512.md')
+    label=' / '.join(adb('shell','getprop',p).strip() for p in ('ro.product.manufacturer','ro.product.model','ro.soc.model','ro.build.version.release'))
+    out=args.output or ROOT/'artifacts'/('photo-tests-sm8850-1024' if soc=='SM8850' else 'photo-tests-1024')
+    out.mkdir(parents=True,exist_ok=True)
     adb('shell','am','start','-W','-n',PKG+'/.MainActivity')
     def require_app_folder(folder):
         listing=adb('shell','ls','-ld',folder)
@@ -43,11 +51,13 @@ def main():
     reports=json.loads(report_file.read_text(encoding='utf-8')) if report_file.exists() else []
     for backend in args.backends:
         folder=out/backend; folder.mkdir(exist_ok=True)
-        models=ROOT/'artifacts'/('qnn-1024' if backend=='npu' else 'ncnn-0.5b-1024')
+        models=(args.npu_models or ROOT/'artifacts'/('qnn-sm8850-1024' if soc=='SM8850' else 'qnn-1024')) if backend=='npu' else (args.gpu_models or ROOT/'artifacts'/('ncnn-sm8850-1024' if soc=='SM8850' else 'ncnn-0.5b-1024'))
         manifest=json.loads((models/'manifest.json').read_text())
         assert manifest['tileSize']==1024
+        target_soc=manifest.get('targetSoc','SM8550')
+        if backend=='npu': assert target_soc==soc,(target_soc,soc)
         if args.deploy:
-            target=REMOTE+('/models-1024' if backend=='npu' else '/models-gpu-1024')
+            target=REMOTE+(('/models-1024' if target_soc=='SM8550' else f'/models-{target_soc.lower()}-1024') if backend=='npu' else '/models-gpu-1024')
             require_app_folder(target)
             for stage in manifest['stages']:
                 for field,hash_field in [('file','sha256')]+([('param','paramSha256')] if backend=='gpu' else []):
@@ -77,20 +87,24 @@ def main():
             reports=[x for x in reports if x['backend']!=backend]+[record]
             report_file.write_text(json.dumps(reports,ensure_ascii=False,indent=2),encoding='utf-8')
             manifest['deviceValidated']=True
-            manifest['validatedDevice']='Xiaomi 13 / SM8550 / Adreno 740 / Android 13'
-            manifest['validationReference']='docs/14-input-patch-512.md'
+            manifest['validatedDevice']=label
+            manifest['validationReference']=validation_reference
             manifest['validatedScope']='single 1024-output JNI pass; common four-patch photo pipeline validated on NPU'
             if backend=='gpu':
-                manifest['gpuProfile'].update({'hostVaeFallback':True,'maxStorageBufferRangeBytes':134217728,'vaeCpuSgemmConvolution':False,'streamGraphs':True})
+                stats=raw['stats']
+                manifest['gpuProfile'].update({'hostVaeFallback':stats.get('vaeBackend')=='cpu-buffer-limit','maxStorageBufferRangeBytes':stats.get('maxStorageBufferRange',134217728),'vaeCpuSgemmConvolution':False,'streamGraphs':stats.get('streamGraphs',True)})
             (models/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
             continue
         adb('push',source,REMOTE+'/photo-test.jpg')
         adb('shell','rm','-f',REMOTE+'/app-test-result.json')
         runid=uuid.uuid4().hex
+        (folder/'photo-run-id.txt').write_text(runid)
+        adb('shell','am','force-stop',PKG)
         adb('shell','input','keyevent','KEYCODE_WAKEUP')
-        adb('shell','am','start','-n',PKG+'/.MainActivity','--es','vosr_test_input',REMOTE+'/photo-test.jpg',
+        start_log=adb('shell','am','start','-W','-n',PKG+'/.MainActivity','--es','vosr_test_input',REMOTE+'/photo-test.jpg',
             '--ez','vosr_test_photo','true','--ei','vosr_test_scale','2','--es','vosr_test_backend',backend,
             '--es','vosr_test_run_id',runid,'--ez','vosr_test_save','true')
+        (folder/'photo-launch.txt').write_text(start_log,encoding='utf-8')
         print('RUN four actual photo patches '+backend,flush=True)
         launched=time.monotonic(); deadline=launched+1800
         while True:
@@ -111,9 +125,10 @@ def main():
         stats=json.loads(result['engineStats'])
         assert stats['patchRunCount']==4 and stats['subprocessCount']==0
         if backend=='npu':
-            assert stats['graphCount']==12 and stats['sharedScratch'] and stats['streamDit']
-            assert stats['maxResidentContextCount']<=6 and stats['contextCreateCount']==33
-        else: assert stats['contextCreateCount']==12
+            assert stats['graphCount']==12 and stats['sharedScratch']
+            if soc=='SM8850': assert stats['extendedUdma']
+            assert stats['streamDit'] and stats['maxResidentContextCount']<=6 and stats['contextCreateCount']==33
+        else: assert stats['graphCount']==12 and stats['maxResidentNetCount']==1 and stats['contextCreateCount']==48
         media=adb('shell','content','query','--uri',result['galleryUri'],'--projection','is_pending')
         assert 'is_pending=0' in media
         adb('pull',REMOTE+'/app-test-output.png',folder/'output.png')
@@ -125,8 +140,8 @@ def main():
         reports=[x for x in reports if x['backend']!=backend]+[record]
         report_file.write_text(json.dumps(reports,ensure_ascii=False,indent=2),encoding='utf-8')
         manifest['deviceValidated']=True
-        manifest['validatedDevice']='Xiaomi 13 / SM8550 / Adreno 740 / Android 13'
-        manifest['validationReference']='docs/14-input-patch-512.md'
+        manifest['validatedDevice']=label
+        manifest['validationReference']=validation_reference
         manifest['photoProfile']={'longestSide':832,'inputTileSize':512,'inputOverlap':96,'inputStride':416,'scale':2,'outputTileSize':1024,'outputOverlap':192}
         (models/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
         print(json.dumps({'photoPassed':backend,'patches':4,'nativePatchMs':result['nativePatchMs'],'elapsedMs':result['elapsedMs']}),flush=True)

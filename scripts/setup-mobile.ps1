@@ -29,6 +29,12 @@ foreach ($Library in @('libQnnHtp.so','libQnnHtpV73Stub.so','libQnnSystem.so')) 
     Copy-Item -LiteralPath "$QnnSdk\lib\aarch64-android\$Library" -Destination "$NativeRoot\$Library" -Force
 }
 Copy-Item -LiteralPath "$QnnSdk\lib\hexagon-v73\unsigned\libQnnHtpV73Skel.so" -Destination "$NativeRoot\libQnnHtpV73Skel.so" -Force
+foreach ($Library in @('libQnnHtpV81Skel.so','libQnnHtpV81.so')) {
+    $Source=Join-Path $QnnSdk "lib\hexagon-v81\unsigned\$Library"
+    if (!(Test-Path -LiteralPath $Source)) { throw "缺少 v81 运行库：$Source；请按阶段 15 文档补齐 SDK" }
+    Copy-Item -LiteralPath $Source -Destination (Join-Path $NativeRoot $Library) -Force
+}
+Copy-Item -LiteralPath "$QnnSdk\lib\aarch64-android\libQnnHtpV81Stub.so" -Destination "$NativeRoot\libQnnHtpV81Stub.so" -Force
 $FlutterPath="$WorkspaceRoot\tools\flutter".Replace('\','\\')
 $AndroidPath="$WorkspaceRoot\tools\android-sdk".Replace('\','\\')
 "flutter.sdk=$FlutterPath`nsdk.dir=$AndroidPath`n" | Set-Content -LiteralPath "$ProjectRoot\app\android\local.properties" -Encoding utf8
