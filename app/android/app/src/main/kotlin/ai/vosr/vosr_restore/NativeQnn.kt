@@ -25,7 +25,7 @@ internal object ResidentEngine {
         close()
         val start=System.nanoTime()
         val created=if (selected=="npu") NativeQnn.create(models.absolutePath,context.applicationInfo.nativeLibraryDir,detailed,firstProfileStage)
-                    else NativeGpu.create(models.absolutePath)
+                    else NativeGpu.create(models.absolutePath,org.json.JSONObject(File(models,"manifest.json").readText()).getInt("tileSize"))
         check(created!=0L) { "NPU 常驻引擎初始化失败" }
         handle=created; key=requested; backend=selected
         return Lease(created,false,(System.nanoTime()-start)/1_000_000)

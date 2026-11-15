@@ -20,16 +20,21 @@ OUT.mkdir(parents=True, exist_ok=True)
 DATA.mkdir(parents=True, exist_ok=True)
 torch.set_num_threads(8)
 torch.set_grad_enabled(False)
+INPUT_SCALE=4
 
 def save_tensor(name, value):
     array = value.detach().cpu().numpy().astype(np.float32)
     np.save(DATA/f'{name}.npy', array)
     array.tofile(DATA/f'{name}.raw')
 
-def validate_export(name, model, inputs, input_names, output_names):
+def validate_export(name, model, inputs, input_names, output_names, reference=None):
     model.eval()
     before = time.perf_counter()
-    expected = model(*inputs)
+    expected = model(*inputs) if reference is None else reference
+    if name.startswith('dit_blocks') and inputs[0].shape[1]>1024:
+        from large_tile import patch_attention
+        patch_attention(model)
+        torch.testing.assert_close(model(*inputs),expected,rtol=3e-5,atol=1e-4)
     if isinstance(expected, torch.Tensor):
         expected = (expected,)
     path = OUT/f'{name}.onnx'
@@ -64,7 +69,7 @@ def validate_export(name, model, inputs, input_names, output_names):
 def input_rgb(size):
     # A reproducible crop of the image shipped by the official project.
     image = Image.open(SOURCE/'preset/datasets/inp_data/Nikon_024_LR4.png').convert('RGB')
-    side = size//4
+    side = size//INPUT_SCALE
     left, top = max(0,(image.width-side)//2), max(0,(image.height-side)//2)
     image = image.crop((left,top,left+side,top+side))
     image.save(DATA/'input.png')
@@ -75,10 +80,16 @@ def input_rgb(size):
     return value
 
 def main():
+    global OUT,DATA,INPUT_SCALE
     parser=argparse.ArgumentParser()
     parser.add_argument('--size',type=int,default=256)
     parser.add_argument('--components',nargs='+',default=['encoder','dino','decoder','dit'])
+    parser.add_argument('--output',type=Path,default=OUT)
+    parser.add_argument('--reference',type=Path,default=DATA)
+    parser.add_argument('--input-scale',type=int,choices=[2,4],default=4)
     args=parser.parse_args()
+    OUT=args.output.resolve(); DATA=args.reference.resolve(); INPUT_SCALE=args.input_scale
+    OUT.mkdir(parents=True,exist_ok=True); DATA.mkdir(parents=True,exist_ok=True)
     if args.size%16:
         raise ValueError('Size must be a multiple of 16')
     rgb=input_rgb(args.size)
@@ -91,7 +102,11 @@ def main():
         wrapper=Encoder(vae)
         direct=vae.encode(rgb).latent_dist.mode()*vae.config.scaling_factor
         torch.testing.assert_close(wrapper(rgb),direct)
-        (condition,)=validate_export('encoder',wrapper,(rgb,),['rgb'],['condition'])
+        if args.size>=1024:
+            from large_tile import patch_group_norm,patch_attention
+            patch_attention(patch_group_norm(wrapper))
+            torch.testing.assert_close(wrapper(rgb),direct,rtol=3e-5,atol=1e-4)
+        (condition,)=validate_export('encoder',wrapper,(rgb,),['rgb'],['condition'],reference=direct)
         save_tensor('condition',condition)
         del vae,wrapper
         gc.collect()
@@ -108,7 +123,12 @@ def main():
         gc.collect()
     if 'decoder' in args.components:
         decoder=Decoder(load_decoder(),0.18215)
-        validate_export('decoder',decoder,(noise,),['latent'],['rgb'])
+        reference=decoder(noise)
+        if args.size>=1024:
+            from large_tile import patch_group_norm,patch_attention
+            patch_attention(patch_group_norm(decoder))
+            torch.testing.assert_close(decoder(noise),reference,rtol=3e-5,atol=1e-4)
+        validate_export('decoder',decoder,(noise,),['latent'],['rgb'],reference=reference)
         del decoder
         gc.collect()
     if 'dit' in args.components:
@@ -133,10 +153,12 @@ def main():
         del model,prepare,part
         gc.collect()
         decoder=Decoder(load_decoder(),0.18215)
-        pixels=(decoder(latent)[0].clamp(-1,1)+1)*127.5
+        restored=decoder(latent)
+        save_tensor('pixels',restored)
+        pixels=(restored[0].clamp(-1,1)+1)*127.5
         Image.fromarray(pixels.permute(1,2,0).numpy().clip(0,255).astype('uint8')).save(DATA/'restored.png')
-        (PROJECT/'artifacts/reference/pipeline.json').write_text(json.dumps({
-            'model':'VOSR_0.5B_os','output_size':args.size,'upscale':4,'seed':42,
+        (DATA/'pipeline.json').write_text(json.dumps({
+            'model':'VOSR_0.5B_os','output_size':args.size,'upscale':INPUT_SCALE,'seed':42,
             'precision':'float32','sampling_steps':1,'posterior':'mode',
             'color_fix':'none','split_vs_official_max_abs':float((latent-expected).abs().max())},indent=2))
 

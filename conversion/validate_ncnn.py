@@ -75,7 +75,7 @@ def main():
     Image.fromarray(((a[0].transpose(1,2,0)+1)*127.5).clip(0,255).astype(np.uint8)).save(args.models/'validation-output.png')
     result={'passed':True,'precision':'FP16 stored weights / FP32 arithmetic','pipelinePsnrDb':psnr,'rmse':rmse,'stages':reports}
     (args.models/'validation.json').write_text(json.dumps(result,indent=2))
-    bundle={'model':'VOSR_0.5B_os','backend':'NCNN_VULKAN_FP16_WEIGHTS_FP32','tileSize':512,
+    bundle={'model':'VOSR_0.5B_os','backend':'NCNN_VULKAN_FP16_WEIGHTS_FP32','tileSize':int(values['pixels'].shape[-1]),
             'converterVersion':'pnnx 20261020','runtimeVersion':importlib.metadata.version('ncnn'),
             'gpuProfile':{'fp16Arithmetic':False,'subgroupOps':False,'winogradConvolution':False,'hostReductionFallback':True},
             'conversionValidated':True,'deviceValidated':False,'stages':manifest}

@@ -11,11 +11,14 @@ PROJECT=Path(__file__).resolve().parents[1]
 SDK=PROJECT.parent/'tools/qairt/2.44.0.260225'
 OUT=PROJECT/'artifacts/qnn'
 OUT.mkdir(parents=True,exist_ok=True)
+ONNX=PROJECT/'artifacts/onnx'
+NATIVE_VAE=None
 
 def build(name):
-    validation=json.loads((PROJECT/f'artifacts/onnx/{name}.validation.json').read_text())
+    source=NATIVE_VAE if NATIVE_VAE is not None and name in ('encoder','decoder') else ONNX
+    validation=json.loads((source/f'{name}.validation.json').read_text())
     converter=[sys.executable,str(SDK/'bin/x86_64-windows-msvc/qairt-converter'),
-               '--input_network',str(PROJECT/f'artifacts/onnx/{name}.onnx'),
+               '--input_network',str(source/f'{name}.onnx'),
                '--output_path',str(OUT/f'{name}.dlc'),'--float_bitwidth','16',
                '--preserve_io_datatype','--target_backend','HTP']
     for label,shape in validation['inputs'].items():
@@ -50,7 +53,12 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('--stages',nargs='+')
     parser.add_argument('--workers',type=int,default=2)
+    parser.add_argument('--onnx',type=Path,default=ONNX)
+    parser.add_argument('--output',type=Path,default=OUT)
+    parser.add_argument('--native-vae-onnx',type=Path,help='Optional native-GroupNorm VAE graphs for HTP; validate device output against stable FP32 ONNX')
     args=parser.parse_args()
+    ONNX=args.onnx.resolve(); OUT=args.output.resolve(); OUT.mkdir(parents=True,exist_ok=True)
+    NATIVE_VAE=args.native_vae_onnx.resolve() if args.native_vae_onnx else None
     stages=args.stages or ['encoder','dino','dit_prepare']+[f'dit_blocks_{i:02}' for i in range(0,28,4)]+['dit_finish','decoder']
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures=[pool.submit(build,name) for name in stages]

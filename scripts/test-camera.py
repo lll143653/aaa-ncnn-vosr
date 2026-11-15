@@ -19,7 +19,7 @@ def main():
     parser.add_argument('--serial',default=os.environ.get('ANDROID_SERIAL'))
     parser.add_argument('--cases',nargs='+',help='Run selected case names and retain other recorded cases')
     args=parser.parse_args()
-    out=ROOT/'artifacts/camera-tests'; out.mkdir(exist_ok=True,parents=True)
+    out=ROOT/'artifacts/camera-tests-1024'; out.mkdir(exist_ok=True,parents=True)
     def adb(*cmd):
         p=subprocess.run([str(ADB),*(['-s',args.serial] if args.serial else []),*map(str,cmd)],capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=50)
         if p.returncode: raise RuntimeError(p.stdout+p.stderr)
@@ -42,7 +42,7 @@ def main():
             '--ez','vosr_test_camera','true','--ei','vosr_test_scale','2','--es','vosr_test_backend','npu',
             '--es','vosr_test_run_id',runid,'--ez','vosr_test_save','true')
         print('RUN '+name,flush=True)
-        deadline=time.monotonic()+240
+        deadline=time.monotonic()+600
         while True:
             raw=adb('shell',f'if [ -f {REMOTE}/app-test-result.json ]; then cat {REMOTE}/app-test-result.json; else echo "{{}}"; fi')
             result=json.loads(raw)
@@ -61,7 +61,11 @@ def main():
         assert max(result['workingWidth'],result['workingHeight'])==832
         assert result['superResolutionWidth']==result['workingWidth']*2 and result['superResolutionHeight']==result['workingHeight']*2
         expected=lambda n:1 if n<=512 else (n-512+415)//416+1
-        assert result['tiles']==expected(result['superResolutionWidth'])*expected(result['superResolutionHeight'])
+        assert result['tiles']==expected(result['workingWidth'])*expected(result['workingHeight'])
+        assert result['inputPatchSize']==512 and result['outputPatchSize']==1024
+        assert result['inputStride']==416 and result['outputOverlap']==192
+        assert result['overlapCoordinateSpace']=='resized-input'
+        assert len(result['nativePatchMs'])==result['tiles']
         assert result['zoomRatio']==zoom and result['exifOrientation']==orientation
         adb('pull',f'{REMOTE}/app-test-output.png',folder/'output.png')
         with Image.open(folder/'output.png') as output: assert output.size==logical

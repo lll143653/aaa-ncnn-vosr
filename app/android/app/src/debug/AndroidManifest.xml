@@ -5,5 +5,6 @@
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <instrumentation android:name="ai.vosr.vosr_restore.CameraChecks" android:targetPackage="ai.vosr.vosr_restore" />
+    <instrumentation android:name="ai.vosr.vosr_restore.ModelChecks" android:targetPackage="ai.vosr.vosr_restore" />
     <instrumentation android:name="ai.vosr.vosr_restore.CameraMetadataChecks" android:targetPackage="ai.vosr.vosr_restore" />
 </manifest>

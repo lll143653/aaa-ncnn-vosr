@@ -48,6 +48,12 @@ public:
     int forward_inplace(std::vector<ncnn::Mat>& a,const ncnn::Option& opt) const override { return invoke([&]{ return original->forward_inplace(a,opt); }); }
 };
 class Engine {
+    int tile=512;
+    std::string directory;
+    bool streamGraphs=false;
+    uint64_t netCreates=0;
+    size_t maxResidentNets=0;
+    double netLoadMs=0;
     std::vector<std::unique_ptr<ncnn::Net>> nets;
     std::mutex mutex;
     std::vector<double> times=std::vector<double>(12);
@@ -72,6 +78,11 @@ class Engine {
         auto start=Clock::now();
         TraceSpan trace("vosr.gpu."+names[stage]);
         __android_log_print(ANDROID_LOG_INFO,"VOSR-GPU","Execute %s",names[stage].c_str());
+        if(!nets[stage]) loadNet(stage);
+        struct StageNet {
+            std::unique_ptr<ncnn::Net>* net; bool release;
+            ~StageNet() { if(release) net->reset(); }
+        } stageNet{&nets[stage],streamGraphs};
         auto ex=nets[stage]->create_extractor();
         for (size_t i=0;i<inputs.size();i++) {
             require(ex.input(("in"+std::to_string(i)).c_str(),inputs[i])==0,"ncnn input failed: "+names[stage]);
@@ -96,56 +107,68 @@ class Engine {
     }
 public:
     std::atomic<bool> cancelled{false};
-    void initialize(const std::string& directory) {
+    void loadNet(size_t index) {
+        const auto& name=names[index];
+        auto stageStart=Clock::now();
+        TraceSpan trace("vosr.load.gpu."+name);
+        auto net=std::make_unique<ncnn::Net>();
+        net->opt.num_threads=4;
+        // Adreno 740 exposes 128 MiB per storage-buffer binding. The
+        // 1024 VAE has 512 MiB feature maps; keep its encoder/decoder on
+        // CPU rather than submitting invalid Vulkan descriptor ranges.
+        const bool hostVae=tile==1024 && (name=="encoder" || name=="decoder");
+        net->opt.use_vulkan_compute=!hostVae;
+        if(hostVae) net->opt.use_sgemm_convolution=false;
+        // Match the original project's norm precision policy.
+        net->opt.use_fp16_packed=false;
+        net->opt.use_fp16_storage=false;
+        net->opt.use_fp16_arithmetic=false;
+        // Use portable FP32 shaders for this Android 13 Adreno profile.
+        net->opt.use_subgroup_ops=false;
+        net->opt.use_cooperative_matrix=false;
+        // Adreno 740 / Android 13: the Winograd path failed numerical
+        // parity. The direct/SGEMM convolution path passes the same test.
+        net->opt.use_winograd_convolution=false;
+        net->set_vulkan_device(ncnn::get_default_gpu_index());
+        require(net->load_param((directory+"/"+name+".ncnn.param").c_str())==0,"Cannot load GPU graph "+name);
+        for (auto* layer:net->layers()) if (layer->type=="Reduction") {
+            // This runtime has no valid Vulkan pipeline for the 4D RMS
+            // reductions. Its generic CPU implementation is validated.
+            layer->support_vulkan=false;
+            layer->support_packing=false;
+            layer->support_fp16_storage=false;
+            layer->support_bf16_storage=false;
+            hostReductionLayers++;
+        }
+        require(net->load_model((directory+"/"+name+".ncnn.bin").c_str())==0,"Cannot load GPU weights "+name);
+        for (auto*& layer:net->mutable_layers()) if (!layer->support_vulkan) {
+            auto metric=std::make_shared<CpuMetric>(); metric->stage=name; metric->layer=layer->name; metric->type=layer->type;
+            cpuMetrics.push_back(metric);
+            layer=new TimedCpuLayer(layer,metric,&profiling);
+        }
+        nets[index]=std::move(net); netCreates++;
+        maxResidentNets=std::max(maxResidentNets,static_cast<size_t>(std::count_if(nets.begin(),nets.end(),[](const auto& n){return n!=nullptr;})));
+        initializationTimes[index]=ms(stageStart); netLoadMs+=initializationTimes[index];
+    }
+    void initialize(const std::string& modelDirectory,int outputTile) {
+        require(outputTile==512 || outputTile==1024,"Unsupported GPU output tile"); tile=outputTile;
+        directory=modelDirectory; streamGraphs=tile==1024;
         initializeGpu(); require(gpuCount>0,"No Vulkan GPU available; CPU fallback is disabled");
         auto start=Clock::now();
-        for (const auto& name:names) {
-            auto stageStart=Clock::now();
-            TraceSpan trace("vosr.load.gpu."+name);
-            auto net=std::make_unique<ncnn::Net>();
-            net->opt.num_threads=4;
-            net->opt.use_vulkan_compute=true;
-            // Match the original project's norm precision policy.
-            net->opt.use_fp16_packed=false;
-            net->opt.use_fp16_storage=false;
-            net->opt.use_fp16_arithmetic=false;
-            // Use portable FP32 shaders for this Android 13 Adreno profile.
-            net->opt.use_subgroup_ops=false;
-            net->opt.use_cooperative_matrix=false;
-            // Adreno 740 / Android 13: the Winograd path failed numerical
-            // parity. The direct/SGEMM convolution path passes the same test.
-            net->opt.use_winograd_convolution=false;
-            net->set_vulkan_device(ncnn::get_default_gpu_index());
-            require(net->load_param((directory+"/"+name+".ncnn.param").c_str())==0,"Cannot load GPU graph "+name);
-            for (auto* layer:net->layers()) if (layer->type=="Reduction") {
-                // This runtime has no valid Vulkan pipeline for the 4D RMS
-                // reductions. Its generic CPU implementation is validated.
-                layer->support_vulkan=false;
-                layer->support_packing=false;
-                layer->support_fp16_storage=false;
-                layer->support_bf16_storage=false;
-                hostReductionLayers++;
-            }
-            require(net->load_model((directory+"/"+name+".ncnn.bin").c_str())==0,"Cannot load GPU weights "+name);
-            for (auto*& layer:net->mutable_layers()) if (!layer->support_vulkan) {
-                auto metric=std::make_shared<CpuMetric>(); metric->stage=name; metric->layer=layer->name; metric->type=layer->type;
-                cpuMetrics.push_back(metric);
-                layer=new TimedCpuLayer(layer,metric,&profiling);
-            }
-            nets.push_back(std::move(net));
-            initializationTimes.push_back(ms(stageStart));
-        }
+        nets.resize(names.size()); initializationTimes.resize(names.size());
+        if(!streamGraphs) for(size_t i=0;i<names.size();i++) loadNet(i);
         loadMs=ms(start);
-        __android_log_print(ANDROID_LOG_INFO,"VOSR-GPU","Resident Vulkan ready: %s, 12 nets, %.1f ms",gpuName().c_str(),loadMs);
+        __android_log_print(ANDROID_LOG_INFO,"VOSR-GPU","Vulkan ready: %s, stream=%d, %.1f ms",gpuName().c_str(),streamGraphs,loadMs);
     }
     jfloatArray run(JNIEnv* env,jfloatArray rgb,jfloatArray dino,jfloatArray noise) {
         std::lock_guard<std::mutex> lock(mutex); auto start=Clock::now();
         TraceSpan trace("vosr.gpu.patch");
+        if(streamGraphs) { cpuMetrics.clear(); hostReductionLayers=0; netLoadMs=0; std::fill(initializationTimes.begin(),initializationTimes.end(),0); }
         for (auto& metric:cpuMetrics) { metric->elapsedMs=0; metric->calls=0; }
         std::fill(validationTimes.begin(),validationTimes.end(),0);
-        auto image=input(env,rgb,512,512,3);
+        auto image=input(env,rgb,tile,tile,3);
         auto dinoImage=input(env,dino,448,448,3);
-        auto n=input(env,noise,64,64,4);
+        auto n=input(env,noise,tile/8,tile/8,4);
         inputCopyMs=ms(start);
         auto condition=execute(0,{image})[0];
         auto features=execute(1,{dinoImage})[0];
@@ -154,20 +177,22 @@ public:
         for (int stage=3;stage<=9;stage++) tokens=execute(stage,{tokens,context})[0];
         auto latent=execute(10,{tokens,n})[0];
         auto pixels=execute(11,{latent})[0];
-        require(pixels.w==512 && pixels.h==512 && pixels.c==3 && pixels.elempack==1 && pixels.elemsize==4,"Invalid GPU output shape/type");
+        require(pixels.w==tile && pixels.h==tile && pixels.c==3 && pixels.elempack==1 && pixels.elemsize==4,"Invalid GPU output shape/type");
         if (cancelled.load()) throw std::runtime_error("已取消处理");
         auto copyStart=Clock::now();
-        auto out=env->NewFloatArray(3*512*512); require(out,"Cannot allocate GPU output");
-        for (int c=0;c<3;c++) env->SetFloatArrayRegion(out,c*512*512,512*512,pixels.channel(c));
+        auto out=env->NewFloatArray(3*tile*tile); require(out,"Cannot allocate GPU output");
+        for (int c=0;c<3;c++) env->SetFloatArrayRegion(out,c*tile*tile,tile*tile,pixels.channel(c));
         require(!env->ExceptionCheck(),"Cannot return GPU output");
         outputCopyMs=ms(copyStart); runMs=ms(start); count++; return out;
     }
     void setProfiling(bool enabled) { std::lock_guard<std::mutex> lock(mutex); profiling=enabled; }
     std::string stats() {
         std::lock_guard<std::mutex> lock(mutex); std::ostringstream out;
-        out<<"{\"engine\":\"NCNN_VULKAN_RESIDENT\",\"device\":\""<<gpuName()<<"\",\"contextCreateCount\":"<<nets.size()
+        out<<"{\"engine\":\"NCNN_VULKAN_RESIDENT\",\"device\":\""<<gpuName()<<"\",\"contextCreateCount\":"<<netCreates<<",\"graphCount\":"<<nets.size()
            <<",\"modelLoadMs\":"<<loadMs<<",\"patchRunCount\":"<<count<<",\"lastPatchMs\":"<<runMs
            <<",\"hostReductionLayers\":"<<hostReductionLayers
+           <<",\"vaeBackend\":\""<<(tile==1024?"cpu-buffer-limit":"vulkan")<<"\""
+           <<",\"streamGraphs\":"<<(streamGraphs?"true":"false")<<",\"maxResidentNetCount\":"<<maxResidentNets<<",\"netLoadMs\":"<<netLoadMs
            <<",\"profilingEnabled\":"<<(profiling?"true":"false")<<",\"inputCopyMs\":"<<inputCopyMs<<",\"outputCopyMs\":"<<outputCopyMs
            <<",\"subprocessCount\":0,\"intermediateTensorFileBytes\":0,\"stageMs\":[";
         for (size_t i=0;i<times.size();i++) { if(i) out<<","; out<<times[i]; }
@@ -210,8 +235,8 @@ extern "C" JNIEXPORT jstring JNICALL Java_ai_vosr_vosr_1restore_NativeGpu_probe(
     try { initializeGpu(); std::ostringstream out; out<<"{\"gpuCount\":"<<gpuCount<<",\"device\":\""<<gpuName()<<"\"}"; return env->NewStringUTF(out.str().c_str()); }
     catch(const std::exception& error) { exception(env,error); return nullptr; }
 }
-extern "C" JNIEXPORT jlong JNICALL Java_ai_vosr_vosr_1restore_NativeGpu_create(JNIEnv* env,jclass,jstring path) {
-    try { auto engine=std::make_shared<Engine>(); engine->initialize(string(env,path));
+extern "C" JNIEXPORT jlong JNICALL Java_ai_vosr_vosr_1restore_NativeGpu_create(JNIEnv* env,jclass,jstring path,jint tile) {
+    try { auto engine=std::make_shared<Engine>(); engine->initialize(string(env,path),tile);
         auto handle=nextHandle.fetch_add(1); std::lock_guard<std::mutex> lock(registryMutex); registry.emplace(handle,std::move(engine)); return handle;
     } catch(const std::exception& error) { exception(env,error); return 0; }
 }

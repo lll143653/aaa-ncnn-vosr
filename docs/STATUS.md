@@ -1,6 +1,6 @@
 # 阶段状态
 
-日期：2026-11-14。
+日期：2026-11-15。
 
 | 阶段 | 状态 | 文档 |
 | --- | --- | --- |
@@ -13,5 +13,6 @@
 | 11 仓库整理 | 已完成，构建文件、文档入口和提交范围整理 | 11-repository-cleanup.md |
 | 12 系统相机拍照复原 | 代码、原生数值检查和 NPU 样例通过；本机实拍因 EXIF 缺失被严格拒绝 | 12-camera-restoration.md |
 | 13 拍照元数据排查 | 对照完成；两条相机路径均保留 EXIF，均缺少标准变焦字段 | 13-camera-metadata-diagnosis.md |
+| 14 输入块尺度修正 | 已完成；832×624 实际 4 块，NPU 整图保存、相机 EXIF 分支和 GPU 单次 JNI 数值检查通过 | 14-input-patch-512.md |
 
-当前用法见 [Android 文档](android.md)，本地安装包说明见 [使用说明](../deliverables/使用说明.md)。小米 13 前台 NPU 完整推理中位数 1.588 秒/块，单块样例整次复原约 2.23 秒；GPU 兼容路径约 38.55 秒/块，134 个 MatMul 和 85 个 Reduction 在 CPU 执行。详细条件见阶段 10。开发分支为 `feat/mobile-npu-gpu`。
+当前用法见 [Android 文档](android.md)，本地安装包说明见 [使用说明](../deliverables/使用说明.md)。阶段 10 的 1.588 秒 NPU、38.55 秒 GPU 均为旧 512 输出块的历史测量，不能套用到新 1024 输出规格。开发分支为 `feat/mobile-npu-gpu`。

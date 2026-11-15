@@ -18,9 +18,9 @@ class PatchPipeline(
     private val progress: (Double,String)->Unit,
     private val infer: (FloatArray,FloatArray,FloatArray)->FloatArray,
     private val timings: MutableList<Map<String,Any>>,
-    private val cancelled: ()->Boolean
+    private val cancelled: ()->Boolean,
+    private val tile: Int=512
 ) {
-    private val tile=512
     private val plane=tile*tile
     private val costs=linkedMapOf<String,Double>()
     private val patchCosts=mutableListOf<Map<String,Any>>()
@@ -65,16 +65,17 @@ class PatchPipeline(
         return z xor (z ushr 31)
     }
     private fun noise(seed: Long,left: Int,top: Int): FloatArray {
-        val result=FloatArray(4*64*64)
-        for (c in 0..3) for (y in 0 until 64) for (x in 0 until 64) {
+        val side=tile/8
+        val result=FloatArray(4*side*side)
+        for (c in 0..3) for (y in 0 until side) for (x in 0 until side) {
             val key=seed xor (c.toLong()*-7046029254386353131L) xor ((left/8+x).toLong() shl 32) xor (top/8+y).toLong()
             val u1=((mix(key) ushr 11).toDouble()+.5)/9007199254740992.0
             val u2=((mix(key xor -4658895280553007687L) ushr 11).toDouble()+.5)/9007199254740992.0
-            result[c*4096+y*64+x]=(sqrt(-2*ln(u1))*cos(2*PI*u2)).toFloat()
+            result[c*side*side+y*side+x]=(sqrt(-2*ln(u1))*cos(2*PI*u2)).toFloat()
         }
         return result
     }
-    private val gaussian=FloatArray(tile) { x -> exp(-.5*(x-255.5).pow(2)/(tile*.25).pow(2)).toFloat() }
+    private val gaussian=FloatArray(tile) { x -> exp(-.5*(x-(tile-1)*.5).pow(2)/(tile*.25).pow(2)).toFloat() }
 
     /** Emits only final rows, after every patch contributing to them is available. */
     private fun emitRows(writer: StreamingPng, tiles: List<TileFile>, from: Int,to: Int,width: Int) {

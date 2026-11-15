@@ -1,6 +1,7 @@
 param(
     [string]$Serial = $env:ANDROID_SERIAL,
     [ValidateSet('npu','gpu','both')][string]$Backend = 'both',
+    [ValidateSet(512,1024)][int]$TileSize = 1024,
     [switch]$SkipModels,
     [switch]$RunSmokeTest
 )
@@ -19,11 +20,15 @@ if ($LASTEXITCODE -ne 0) { throw 'APK 安装失败，请查看手机是否要求
 if (!$SkipModels) {
     $SelectedBackends = if ($Backend -eq 'both') { @('npu','gpu') } else { @($Backend) }
     foreach ($SelectedBackend in $SelectedBackends) {
-    $ModelRoot = Join-Path $ProjectRoot $(if ($SelectedBackend -eq 'npu') { 'artifacts\qnn' } else { 'artifacts\ncnn-0.5b' })
+    $ModelFolder = if ($SelectedBackend -eq 'npu') { 'qnn' } else { 'ncnn-0.5b' }
+    if ($TileSize -eq 1024) { $ModelFolder += '-1024' }
+    $ModelRoot = Join-Path $ProjectRoot "artifacts\$ModelFolder"
     $ManifestPath = Join-Path $ModelRoot 'manifest.json'
     $Manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
+    if ($Manifest.tileSize -ne $TileSize) { throw '模型输出尺寸不匹配' }
     if (!$Manifest.deviceValidated) { throw "$SelectedBackend 模型未通过真机验证" }
     $DeviceFolder=if ($SelectedBackend -eq 'npu') { 'models' } else { 'models-gpu' }
+    if ($TileSize -eq 1024) { $DeviceFolder += '-1024' }
     $DeviceRoot = "/sdcard/Android/data/$Package/files/$DeviceFolder"
     $DirectoryReady = $false
     for ($Attempt = 0; $Attempt -lt 40; $Attempt++) {
@@ -55,6 +60,6 @@ if ($RunSmokeTest) {
     & $AdbExe @DeviceArgs push $InputFile $RemoteInput
     & $AdbExe @DeviceArgs shell am force-stop $Package
     $TestBackend=if ($Backend -eq 'both') { 'npu' } else { $Backend }
-    & $AdbExe @DeviceArgs shell am start -n "$Package/.MainActivity" --es vosr_test_input $RemoteInput --ei vosr_test_scale 2 --es vosr_test_backend $TestBackend
+    & $AdbExe @DeviceArgs shell am start -n "$Package/.MainActivity" --es vosr_test_input $RemoteInput --ei vosr_test_scale 2 --es vosr_test_backend $TestBackend --ez vosr_test_photo $(if($TileSize -eq 1024){'true'}else{'false'})
     Write-Output '应用内复原测试已启动，结果写入手机应用文件目录的 app-test-result.json。'
 }

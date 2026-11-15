@@ -1,0 +1,109 @@
+{
+  "date": "2026-11-15",
+  "device": "Xiaomi 13 / SM8550 / Adreno 740 / Android 13",
+  "measurement": "Functional acceptance, single samples; temperature, clocks and sleep state not controlled",
+  "geometry": {
+    "longestSide": 832,
+    "inputTileSize": 512,
+    "inputOverlap": 96,
+    "inputStride": 416,
+    "scale": 2,
+    "outputTileSize": 1024,
+    "outputOverlap": 192
+  },
+  "npu": {
+    "scope": "full JNI numeric check, four-patch photo pipeline and MediaStore save",
+    "passed": true,
+    "pixelPsnrVsFp32Db": 60.15610101481172,
+    "originalSize": [
+      4000,
+      3000
+    ],
+    "workingSize": [
+      832,
+      624
+    ],
+    "tiles": 4,
+    "nativePatchMs": [
+      10825.9,
+      11176,
+      11150.3,
+      11188.9
+    ],
+    "totalMs": 86956,
+    "fusionMs": 16830,
+    "modelVerificationMs": 1228,
+    "initializationMs": 903,
+    "pipelineBreakdownMs": {
+      "regionDecoderOpen": 3.482448,
+      "pngOpen": 0.539062,
+      "regionDecodeAndBicubic": 12372.147652,
+      "rgbNormalize": 238.954948,
+      "dinoResizeNormalize": 4537.368383999999,
+      "noiseGenerate": 47.564845,
+      "jniInference": 44357.926440999996,
+      "patchCacheWrite": 114.219064,
+      "pngEncodeWrite": 621.8985050000006,
+      "stitchAndPng": 6031.912498,
+      "pngFinalize": 0.887292,
+      "outputFinalize": 0.255052
+    },
+    "maxResidentContexts": 6,
+    "scratchMaxBytes": 585170944,
+    "scratchUnsharedSumBytes": 1764294656,
+    "lastPatchGraphExecuteSumMs": 7029.5708,
+    "lastPatchContextLoadMs": 4039.76,
+    "lastPatchContextFreeMs": 89.9545
+  },
+  "gpu": {
+    "scope": "one complete JNI pass; common photo tiling/fusion/save tested on NPU",
+    "passed": true,
+    "pixelPsnrVsFp32Db": 68.96053381571568,
+    "nativePatchMs": 343249,
+    "stageMs": [
+      99299.1,
+      5193.47,
+      922.701,
+      19941.5,
+      19703,
+      19712.2,
+      19554.9,
+      20029.8,
+      20468.9,
+      20753,
+      729.615,
+      96778.1
+    ],
+    "streamGraphs": true,
+    "maxResidentNets": 1,
+    "vaeBackend": "cpu-buffer-limit",
+    "netLoadMs": 17123
+  },
+  "camera": [
+    {
+      "case": "missing",
+      "passed": true,
+      "rejected": true
+    },
+    {
+      "case": "zoom9",
+      "passed": true,
+      "rejected": true
+    },
+    {
+      "case": "zoom12-exif6",
+      "passed": true,
+      "tiles": 4,
+      "originalOrientation": 6,
+      "outputSize": [
+        751,
+        1001
+      ],
+      "workingSize": [
+        624,
+        832
+      ],
+      "totalMs": 70611
+    }
+  ]
+}

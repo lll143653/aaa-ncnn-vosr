@@ -9,14 +9,14 @@
 | 文件 | 用途 |
 | --- | --- |
 | `vosr-restore-debug.apk` | 含两个推理后端的开发版应用 |
-| `vosr-0.5b-htp-v73-models.zip` | NPU 模型包 |
-| `vosr-0.5b-ncnn-vulkan-models.zip` | GPU 模型包 |
+| `vosr-0.5b-htp-v73-1024-models.zip` | NPU 模型包，512 LR 输入块 / 1024 输出块 |
+| `vosr-0.5b-ncnn-vulkan-1024-models.zip` | GPU 模型包，同一输入、输出规格 |
 
-安装 APK，在“推理后端”选择 NPU 或 GPU，导入对应 ZIP，然后选择照片和放大倍数。两个 ZIP 不能混用。处理结果可对比并保存到相册 `Pictures/VOSR`。小米 13 上建议使用 NPU。
+安装 APK，在“推理后端”选择 NPU 或 GPU，导入对应的 1024 ZIP，然后选择照片。两个后端的 ZIP 不能混用；旧 512 输出模型也不适用于新流程。处理结果可对比并保存到相册 `Pictures/VOSR`。小米 13 上建议使用 NPU。
 
 模型就绪后也可点击“拍照并复原（≥10×）”。相机照片按 EXIF 严格校验，使用固定 832 / 96 重叠 / 2× 处理和原尺寸金字塔融合，具体规则见 [拍照复原](12-camera-restoration.md)。
 
-应用会保留原图尺寸，分块处理。输出越大，patch 越多，耗时也越长。生成式复原可能补出原图中无法确认的细节。
+相册和拍照均先等比例调整到最长边 832，以 512 输入块、96 输入重叠、416 输入步长处理；固定 2×，每块输出 1024。832×624 实际运行 4 次模型推理。拼接后缩回原图尺寸与 LR 做金字塔融合。分块说明和新规格验证见[阶段 14](14-input-patch-512.md)。生成式复原可能补出原图中无法确认的细节。
 
 ## 构建环境
 
@@ -52,7 +52,7 @@ E:\work\ai\tools\android-sdk\platform-tools\adb.exe devices
 .\scripts\install-android.ps1 -Serial <设备序列号> -SkipModels
 ```
 
-安装使用 `--no-streaming`。`-SkipModels` 保留手机中已有模型；首次可在应用内导入 ZIP。若本机已有经过验证的 `artifacts/qnn` 和 `artifacts/ncnn-0.5b`，也可去掉 `-SkipModels`，由脚本校验并复制模型。
+安装使用 `--no-streaming`。`-SkipModels` 保留手机中已有模型；首次可在应用内导入 ZIP。若本机已有经过验证的 `artifacts/qnn-1024` 和 `artifacts/ncnn-0.5b-1024`，也可去掉 `-SkipModels`，由脚本校验并复制模型。`-TileSize 512` 仅供历史调试流程回归。
 
 ## 从官方权重转换
 
@@ -61,14 +61,15 @@ E:\work\ai\tools\android-sdk\platform-tools\adb.exe devices
 ```powershell
 .\scripts\setup-mobile.ps1 -WithConversion
 . .\scripts\env.ps1
-.\.venv\Scripts\python.exe conversion\export.py --size 512
-.\.venv\Scripts\python.exe conversion\export_ncnn.py --reference artifacts\reference
-.\.venv\Scripts\python.exe conversion\validate_ncnn.py --reference artifacts\reference --onnx artifacts\onnx
+.\.venv\Scripts\python.exe conversion\export.py --size 1024 --input-scale 2 --output artifacts\onnx-1024 --reference artifacts\reference-1024
+.\.venv\Scripts\python.exe conversion\export_ncnn.py --size 1024 --reference artifacts\reference-1024 --output artifacts\ncnn-0.5b-1024
+.\.venv\Scripts\python.exe conversion\validate_ncnn.py --reference artifacts\reference-1024 --onnx artifacts\onnx-1024 --models artifacts\ncnn-0.5b-1024
+.\.venv\Scripts\python.exe conversion\export_qnn_large.py --reference artifacts\reference-1024 --output artifacts\onnx-qnn-1024
 ```
 
 第一步下载固定版本的官方源码及 0.5B 权重。ONNX 导出同时生成参考张量并与 PyTorch 对照；ncnn 导出使用 pnnx 20261020，再用 ncnn 20260526 CPU 运行完整链路做数值检查。转换通过不代表手机 Vulkan 已通过，仍需真机回归。
 
-NPU 转换使用 `conversion/build_qnn.py`。先按 QAIRT 2.44 的要求配置其 Python 环境，再加载 `scripts/qnn-env.ps1`，用该环境的 Python 执行转换。它读取 `artifacts/onnx/`，生成 HTP v73 FP16 context；`conversion/validate_device.py` 用 qnn-net-run 对照 ONNX，并在通过后生成 NPU manifest。验证前需要在手机 `/data/local/tmp/vosr/qnn` 准备 SDK 的 qnn-net-run 和 HTP 运行库；多设备连接时用 `ANDROID_SERIAL` 选择设备。不要把普通 PyTorch 环境当作已安装 QAIRT 转换器依赖的环境。
+NPU 转换使用 `conversion/build_qnn.py --onnx artifacts/onnx-1024 --native-vae-onnx artifacts/onnx-qnn-1024 --output artifacts/qnn-1024 --workers 1`。先按 QAIRT 2.44 的要求配置其 Python 环境，再加载 `scripts/qnn-env.ps1`，用该环境的 Python 执行转换。`conversion/validate_device.py --reference artifacts/reference-1024 --onnx artifacts/onnx-1024 --models artifacts/qnn-1024 --output artifacts/device1024` 用 qnn-net-run 对照 ONNX，通过后生成 NPU manifest。验证前需要在手机 `/data/local/tmp/vosr/qnn` 准备 SDK 的 qnn-net-run 和 HTP 运行库；多设备连接时用 `ANDROID_SERIAL` 选择设备。不要把普通 PyTorch 环境当作已安装 QAIRT 转换器依赖的环境。
 
 移动端共 12 个子图：VAE encoder、DINO、DiT prepare、7 组四层 DiT、DiT finish、LightDecoder。模型清单保存在 `models/mobile-0.5b/`，大权重与中间文件保存在被 Git 忽略的 `artifacts/`。两个后端的转换和数值边界见 [阶段 8](08-repository-integration.md)。
 
@@ -80,10 +81,11 @@ Push-Location app
 flutter analyze
 flutter test
 Pop-Location
-.\.venv\Scripts\python.exe scripts\test-mobile-backends.py --serial <设备序列号>
+.\.venv\Scripts\python.exe scripts\test-photo-backends.py --serial <设备序列号> --deploy
+.\.venv\Scripts\python.exe scripts\test-camera.py --serial <设备序列号>
 ```
 
-真机脚本使用固定输入，检查原始尺寸、EXIF、三块拼接、会话复用、后端切换、输出像素和相册副本。它会在手机里执行复原并写入测试图片，不只是读取设备信息。两个后端的原始验收结果见 [阶段 9](09-mobile-backend-acceptance.md)。
+新规格脚本先通过 JNI 对照公开参考张量，再用固定样图检查两个后端的 4 次真实推理、原尺寸融合和相册保存。相机脚本另外检查严格 EXIF、横竖方向及小图放大。它们会执行复原并写入测试图片，不读取屏幕。`test-mobile-backends.py` 保留阶段 9 的旧 512 输出、原分辨率路径回归，需旧模型。
 
 Profile 的采集、普通计时与详细事件、前台/休眠分组见 [阶段 10](10-performance-profile.md)。`profile-mobile.py` 需要先用插桩前 APK 采集 `--baseline-only` 基准，再安装当前版本。使用新的 `--output-dir` 保存另一轮采样，避免覆盖已有结果。`analyze-mobile-profile.py` 和 `verify-mobile-profile.py` 默认针对阶段 10 的本地证据目录；后者是这组固定实验的验收脚本。
 
@@ -92,6 +94,6 @@ Profile 的采集、普通计时与详细事件、前台/休眠分组见 [阶段
 ## 已知限制
 
 - NPU context 针对 SM8550 / HTP v73，其它高通芯片需要重新转换和验证。
-- GPU 为兼容配置：关闭 Winograd、subgroup、cooperative matrix；134 个 MatMul、85 个 Reduction 在 CPU 执行，子图间也存在 CPU Mat 传递。当前速度不适合用来替代小米 13 上的 NPU 路径。
+- GPU 为兼容配置：关闭 Winograd、subgroup、cooperative matrix；部分 MatMul、Reduction 在 CPU 执行，子图间也存在 CPU Mat 传递。当前速度不适合用来替代小米 13 上的 NPU 路径。
 - ncnn 20261020 的 Vulkan 数值测试、旧 pnnx 的 DiT 转换没有通过，因此运行库和转换器采用不同版本，不能只改版本号就视作完成升级。
 - 当前使用开发签名。完整发布流程、更多机型和长时间温控测试尚未完成。

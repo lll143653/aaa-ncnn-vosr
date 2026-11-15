@@ -1,4 +1,5 @@
 """Execute all compiled graphs on the attached phone and compare with FP32 ORT."""
+import argparse
 import hashlib
 import json
 import math
@@ -19,7 +20,9 @@ LOCAL=PROJECT/'artifacts/device512'
 LOCAL.mkdir(parents=True,exist_ok=True)
 REF=PROJECT/'artifacts/reference'
 QNN=PROJECT/'artifacts/qnn'
+ONNX=PROJECT/'artifacts/onnx'
 NAMES=['encoder','dino','dit_prepare']+[f'dit_blocks_{i:02}' for i in range(0,28,4)]+['dit_finish','decoder']
+ALL_NAMES=NAMES.copy()
 
 def adb(*args):
     result=subprocess.run([str(ADB),*(['-s',DEVICE] if DEVICE else []),*map(str,args)],capture_output=True,text=True,encoding='utf-8',errors='replace')
@@ -34,7 +37,8 @@ def binding(stage,name,output=False):
     return name
 
 def main():
-    run_prefix=f'validation512_{time.time_ns()}'
+    run_prefix=f'validation_{time.time_ns()}'
+    adb('shell','mkdir','-p',REMOTE)
     for name in ('rgb','dino_input','noise'):
         adb('push',REF/f'{name}.raw',f'{REMOTE}/{name}.raw')
     values={name:np.load(REF/f'{name}.npy') for name in ('rgb','dino_input','noise')}
@@ -43,7 +47,7 @@ def main():
     stages=[]
     start=time.perf_counter()
     for name in NAMES:
-        validation=json.loads((PROJECT/f'artifacts/onnx/{name}.validation.json').read_text())
+        validation=json.loads((ONNX/f'{name}.validation.json').read_text())
         binary=QNN/f'{name}.bin'
         print(f'PUSH {name}',flush=True)
         adb('push',binary,f'{REMOTE}/{name}.bin')
@@ -62,7 +66,7 @@ def main():
         (LOCAL/f'{name}.log').write_text(log,encoding='utf-8')
         print(f'EXECUTED {name}: {elapsed:.3f}s',flush=True)
         options=ort.SessionOptions(); options.intra_op_num_threads=8
-        session=ort.InferenceSession(str(PROJECT/f'artifacts/onnx/{name}.onnx'),sess_options=options,providers=['CPUExecutionProvider'])
+        session=ort.InferenceSession(str(ONNX/f'{name}.onnx'),sess_options=options,providers=['CPUExecutionProvider'])
         expected=session.run(None,{key:values[alias] for key,alias in inputs.items()})
         metrics=[]; outputs=[]
         for metadata,reference in zip(validation['outputs'],expected):
@@ -90,6 +94,10 @@ def main():
         (LOCAL/'validation-progress.json').write_text(json.dumps(report,indent=2))
         stages.append({'name':name,'label':name,'file':binary.name,'sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),
                        'inputs':inputs,'outputs':outputs})
+    if NAMES!=ALL_NAMES:
+        (LOCAL/'partial-validation.json').write_text(json.dumps({'passed':True,'stages':report},indent=2))
+        print('PASS requested NPU stages (no complete-pipeline manifest generated)',flush=True)
+        return
     actual=np.fromfile(LOCAL/'decoder-rgb.raw',dtype=np.float32).reshape(values['pixels'].shape)
     reference=values['pixels']
     rmse=float(np.sqrt(np.mean((actual-reference)**2)))
@@ -100,10 +108,21 @@ def main():
     summary={'device':DEVICE,'backend':'QNN_HTP_V73_FP16','total_host_validation_s':time.perf_counter()-start,
              'pixel_psnr_vs_fp32_db':psnr,'pixel_rmse':rmse,'stages':report,'passed':True}
     (LOCAL/'validation.json').write_text(json.dumps(summary,indent=2))
-    manifest={'formatVersion':1,'model':'VOSR_0.5B_os','backend':'QNN_HTP_V73_FP16','tileSize':512,
+    manifest={'formatVersion':1,'model':'VOSR_0.5B_os','backend':'QNN_HTP_V73_FP16','tileSize':int(reference.shape[-1]),
               'deviceValidated':True,'referencePsnrDb':psnr,'stages':stages}
     (QNN/'manifest.json').write_text(json.dumps(manifest,indent=2))
     print(f'PASS complete NPU pipeline: PSNR={psnr:.3f} dB',flush=True)
 
 if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--reference',type=Path,default=REF)
+    parser.add_argument('--onnx',type=Path,default=ONNX)
+    parser.add_argument('--models',type=Path,default=QNN)
+    parser.add_argument('--output',type=Path,default=LOCAL)
+    parser.add_argument('--remote',default=REMOTE,help='Device folder containing qnn-net-run and QNN runtime libraries')
+    parser.add_argument('--stages',nargs='+',choices=ALL_NAMES,help='Independent prefix stages only; partial runs never generate a bundle manifest')
+    args=parser.parse_args()
+    REF=args.reference.resolve(); ONNX=args.onnx.resolve(); QNN=args.models.resolve()
+    LOCAL=args.output.resolve(); LOCAL.mkdir(parents=True,exist_ok=True); REMOTE=args.remote
+    NAMES=args.stages or ALL_NAMES
     main()

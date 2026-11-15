@@ -38,14 +38,23 @@ class _RestorePageState extends State<RestorePage> with WidgetsBindingObserver {
   String message = '选择一张需要复原的照片', device = '正在检查设备', backend = '尚未运行';
   bool busy = false, ready = false, restoring = false;
   double progress = 0, divider = .5;
-  int scale = 4;
   int inputWidth = 0, inputHeight = 0;
   String selectedBackend = 'npu';
   bool checking = false, supported = true;
   bool cameraMode = false, recoveringCamera = false;
   double? cameraZoom;
   int patchCount(int length) =>
-      length <= 512 ? 1 : ((length - 512 + 447) ~/ 448) + 1;
+      length <= 512 ? 1 : ((length - 512 + 415) ~/ 416) + 1;
+  int get workingWidth =>
+      (inputWidth * 832 / (inputWidth > inputHeight ? inputWidth : inputHeight))
+          .round()
+          .clamp(1, 832);
+  int get workingHeight =>
+      (inputHeight *
+              832 /
+              (inputWidth > inputHeight ? inputWidth : inputHeight))
+          .round()
+          .clamp(1, 832);
 
   @override
   void initState() {
@@ -131,7 +140,6 @@ class _RestorePageState extends State<RestorePage> with WidgetsBindingObserver {
       inputHeight = (photo['height'] as num).toInt();
       cameraZoom = (photo['zoomRatio'] as num).toDouble();
       cameraMode = true;
-      scale = 2;
       output = null;
       busy = false;
       message = '拍照完成，正在复原';
@@ -216,13 +224,8 @@ class _RestorePageState extends State<RestorePage> with WidgetsBindingObserver {
     });
     try {
       final result = await api.invokeMapMethod<String, dynamic>(
-        cameraMode ? 'restoreCamera' : 'restore',
-        {
-          'path': input,
-          'scale': cameraMode ? 2 : scale,
-          'seed': 42,
-          'backend': selectedBackend,
-        },
+        cameraMode ? 'restoreCamera' : 'restorePhoto',
+        {'path': input, 'scale': 2, 'seed': 42, 'backend': selectedBackend},
       );
       if (!mounted) return;
       setState(() {
@@ -433,27 +436,16 @@ class _RestorePageState extends State<RestorePage> with WidgetsBindingObserver {
           const SizedBox(height: 16),
           Row(
             children: [
-              const Text('放大倍数', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text('处理倍率', style: TextStyle(fontWeight: FontWeight.w600)),
               const Spacer(),
-              SegmentedButton<int>(
-                segments: const [
-                  ButtonSegment(value: 2, label: Text('2×')),
-                  ButtonSegment(value: 4, label: Text('4×')),
-                ],
-                selected: {scale},
-                onSelectionChanged: busy || cameraMode
-                    ? null
-                    : (value) => setState(() => scale = value.first),
-              ),
+              const Text('固定 2× · 输出原尺寸'),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             inputWidth > 0
-                ? cameraMode
-                      ? '拍照复原 · ${cameraZoom?.toStringAsFixed(1)}× · 固定 2× 处理，结果保持 $inputWidth×$inputHeight'
-                      : '原图 $inputWidth×$inputHeight → ${inputWidth * scale}×${inputHeight * scale}，共 ${patchCount(inputWidth * scale) * patchCount(inputHeight * scale)} 块。保留原始分辨率，大图耗时更长。'
-                : '保留原始分辨率，按重叠 patch 逐块复原并拼接。',
+                ? '${cameraMode ? "拍照 ${cameraZoom?.toStringAsFixed(1)}× · " : ""}原图 $inputWidth×$inputHeight → 处理 $workingWidth×$workingHeight，共 ${patchCount(workingWidth) * patchCount(workingHeight)} 块。融合后输出 $inputWidth×$inputHeight。'
+                : '等比例调整到最长边 832，按 512×512 输入块复原，重叠 96；融合后保持原尺寸。',
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 18),

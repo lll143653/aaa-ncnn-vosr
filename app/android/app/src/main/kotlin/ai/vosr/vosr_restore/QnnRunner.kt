@@ -26,18 +26,20 @@ class QnnRunner(private val context: Context, private val models: File, private 
             return hash.digest().joinToString("") { "%02x".format(it) }
         }
 
-        @Synchronized fun verifyBundle(directory: File, backend: String = "npu"): Boolean {
+        @Synchronized fun verifyBundle(directory: File, backend: String = "npu",expectedTile: Int?=null): Boolean {
             val manifest = File(directory, "manifest.json")
             if (!manifest.isFile) {
                 android.util.Log.e("VOSR", "Model manifest unavailable: ${manifest.absolutePath}; dir=${directory.exists()}; readable=${directory.canRead()}")
                 return false
             }
+            val tile=try { JSONObject(manifest.readText()).getInt("tileSize") } catch(_: Exception) { return false }
+            if(tile !in listOf(512,1024) || (expectedTile!=null && tile!=expectedTile)) return false
             if (verifiedPath == directory.absolutePath && verifiedStamp == manifest.lastModified()) return true
             try {
                 val data = JSONObject(manifest.readText())
                 require(data.getString("backend") == if (backend=="npu") "QNN_HTP_V73_FP16" else "NCNN_VULKAN_FP16_WEIGHTS_FP32")
                 if (backend=="gpu") require(data.getString("model")=="VOSR_0.5B_os")
-                require(data.getInt("tileSize") == 512)
+                require(data.getInt("tileSize") in listOf(512,1024))
                 require(data.getBoolean(if (backend=="npu") "deviceValidated" else "conversionValidated"))
                 val stages = data.getJSONArray("stages")
                 require(stages.length() == 12)
@@ -63,7 +65,7 @@ class QnnRunner(private val context: Context, private val models: File, private 
             }
         }
 
-        fun importBundle(source: InputStream, target: File, backend: String, update: (Double) -> Unit) {
+        fun importBundle(source: InputStream, target: File, backend: String, expectedTile: Int=512, update: (Double) -> Unit) {
             val temporary = File(target.parentFile, "models-import-${UUID.randomUUID()}")
             temporary.mkdirs()
             try {
@@ -87,7 +89,7 @@ class QnnRunner(private val context: Context, private val models: File, private 
                         zip.closeEntry()
                     }
                 }
-                require(verifyBundle(temporary,backend)) { "模型文件校验失败，或模型包不匹配所选后端" }
+                require(verifyBundle(temporary,backend,expectedTile)) { "模型文件校验失败，或模型包后端、输出尺寸不匹配" }
                 ResidentEngine.close()
                 val backup = File(target.parentFile,"models-previous-${UUID.randomUUID()}")
                 if (target.exists()) require(target.renameTo(backup)) { "无法替换旧模型" }
@@ -136,7 +138,8 @@ class QnnRunner(private val context: Context, private val models: File, private 
         if (backend=="npu") NativeQnn.profile(lease.handle,nativeProfile) else NativeGpu.profile(lease.handle,nativeProfile)
         if (backend=="npu") NativeQnn.resetCancel(lease.handle) else NativeGpu.resetCancel(lease.handle)
         if (cancelled.get()) throw java.util.concurrent.CancellationException("已取消处理")
-        val result=PatchPipeline(context,models,progress,::infer,timing) { cancelled.get() }.restore(input,scale,seed,overlap).toMutableMap()
+        val tile=JSONObject(File(models,"manifest.json").readText()).getInt("tileSize")
+        val result=PatchPipeline(context,models,progress,::infer,timing,{ cancelled.get() },tile).restore(input,scale,seed,overlap).toMutableMap()
         result["pipelineMs"]=result["elapsedMs"]!!
         result["elapsedMs"]=(System.nanoTime()-started)/1_000_000
         result["modelVerificationMs"]=verifiedMs
@@ -145,7 +148,7 @@ class QnnRunner(private val context: Context, private val models: File, private 
         result["engineStats"]=stats()
         result["nativePatchMs"]=nativePatchTimes
         result["nativePatchProfiles"]=nativePatchProfiles
-        result["backend"]=if (backend=="npu") "Qualcomm HTP / NPU · FP16 · 常驻" else "ncnn / Vulkan GPU · FP32 计算 · 常驻"
+        result["backend"]=if (backend=="npu") "Qualcomm HTP / NPU · FP16" else "ncnn / Vulkan + CPU · FP32 计算"
         result["backendId"]=backend
         return result
     }

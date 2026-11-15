@@ -34,7 +34,8 @@ class MainActivity : FlutterActivity() {
         return file
     }
     @Volatile private var activeRunner: QnnRunner? = null
-    private fun modelDirectory(backend: String) = File(getExternalFilesDir(null), if (backend=="npu") "models" else "models-gpu").apply {
+    private fun modelDirectory(backend: String,large: Boolean=false) = File(getExternalFilesDir(null),
+        (if (backend=="npu") "models" else "models-gpu")+(if(large)"-1024" else "")).apply {
         check(isDirectory || mkdirs()) { "无法创建应用模型目录" }
     }
     private fun selectedBackend(value: String?): String {
@@ -89,10 +90,10 @@ class MainActivity : FlutterActivity() {
                             catch (error: LinkageError) { android.util.Log.w("VOSR","GPU library unavailable",error); JSONObject().put("gpuCount",0) }
                             catch (error: RuntimeException) { android.util.Log.w("VOSR","Vulkan probe failed",error); JSONObject().put("gpuCount",0) }
                         val supported=if (backend=="npu") npuSupported() else gpu.optInt("gpuCount")>0
-                        val ready = supported && QnnRunner.verifyBundle(modelDirectory(backend),backend)
+                        val ready = supported && QnnRunner.verifyBundle(modelDirectory(backend,true),backend,PhotoPlan.OUTPUT_TILE)
                         mapOf("device" to "${Build.MANUFACTURER} ${Build.MODEL}",
                             "ready" to ready,"supported" to supported,"gpu" to gpu.optString("device"),
-                            "message" to if (!supported) "此设备不支持当前 ${backend.uppercase()} 后端" else if (ready) "${backend.uppercase()} 模型已就绪" else "请导入 ${backend.uppercase()} 专用模型包")
+                            "message" to if (!supported) "此设备不支持当前 ${backend.uppercase()} 后端" else if (ready) "${backend.uppercase()} 模型已就绪 · 512 输入 / 1024 输出" else "请导入 ${backend.uppercase()} 的 1024 输出模型包")
                     }
                     "pickImage", "importModels" -> {
                         if (pickerResult != null || processing.get()) result.error("BUSY", "正在处理其他任务", null)
@@ -108,22 +109,25 @@ class MainActivity : FlutterActivity() {
                         }
                     }
                     "cancel" -> { activeRunner?.cancel(); result.success(null) }
-                    "restore", "restoreCamera" -> background(result, true) {
+                    "restore", "restoreCamera", "restorePhoto" -> background(result, true) {
                         val input = call.argument<String>("path") ?: error("没有选择照片")
                         val backend=selectedBackend(call.argument<String>("backend"))
                         if (backend=="npu") require(npuSupported()) { "当前 NPU 模型仅支持 SM8550 / HTP v73" }
                         val scale = call.argument<Int>("scale") ?: 4
                         require(scale == 2 || scale == 4) { "不支持的放大倍数" }
                         require(File(input).canonicalPath.startsWith(cacheDir.canonicalPath + File.separator)) { "图像路径无效" }
-                        val runner = QnnRunner(this, modelDirectory(backend),backend) { value, label -> progress(value, label) }
+                        val normalized=call.method!="restore"
+                        if(normalized) require(QnnRunner.verifyBundle(modelDirectory(backend,true),backend,PhotoPlan.OUTPUT_TILE)) { "请导入 512 输入 / 1024 输出的所选后端模型" }
+                        val runner = QnnRunner(this, modelDirectory(backend,normalized),backend) { value, label -> progress(value, label) }
                         activeRunner = runner
                         try {
                             val seed=(call.argument<Int>("seed") ?: 42).toLong()
-                            if(call.method=="restoreCamera") {
+                            if(normalized) {
                                 require(scale==2) { "拍照复原只支持 2×" }
-                                CameraPipeline(this,{ value,label -> progress(value,label) },runner::isCancelled) { resized ->
-                                    runner.restore(resized,2,seed,96)
-                                }.run(captureInput(input))
+                                CameraPipeline(this,{ value,label -> progress(value,label) },runner::isCancelled,
+                                    { resized -> runner.restore(resized,PhotoPlan.SCALE,seed,PhotoPlan.OUTPUT_OVERLAP) },
+                                    requireCameraZoom=call.method=="restoreCamera")
+                                    .run(if(call.method=="restoreCamera") captureInput(input) else File(input))
                             } else runner.restore(File(input), scale, seed)
                         }
                         finally { activeRunner = null }
@@ -227,7 +231,7 @@ class MainActivity : FlutterActivity() {
         background(result) {
             if (requestCode == 101) {
                 contentResolver.openInputStream(uri)!!.use { stream ->
-                    QnnRunner.importBundle(stream, modelDirectory(pickerBackend),pickerBackend) { progress(it, "正在导入 ${pickerBackend.uppercase()} 模型") }
+                    QnnRunner.importBundle(stream, modelDirectory(pickerBackend,true),pickerBackend,PhotoPlan.OUTPUT_TILE) { progress(it, "正在导入 ${pickerBackend.uppercase()} 模型") }
                 }
                 true
             } else {
@@ -239,6 +243,9 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         modelDirectory("npu"); modelDirectory("gpu")
+        modelDirectory("npu",true); modelDirectory("gpu",true)
+        if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE)!=0)
+            File(getExternalFilesDir(null),"model-checks-1024").mkdirs()
         runDebugTest(intent)
     }
 
@@ -270,11 +277,12 @@ class MainActivity : FlutterActivity() {
                     val backend=selectedBackend(intent.getStringExtra("vosr_test_backend"))
                     val detailed=intent.getBooleanExtra("vosr_test_profile",false)
                     val firstProfileStage=intent.getIntExtra("vosr_test_profile_start_stage",0)
-                    val runner=QnnRunner(this,modelDirectory(backend),backend,detailed,firstProfileStage) { value,label -> progress(value,label) }
+                    val photoMode=cameraMode || intent.getBooleanExtra("vosr_test_photo",false)
+                    val runner=QnnRunner(this,modelDirectory(backend,photoMode),backend,detailed,firstProfileStage) { value,label -> progress(value,label) }
                     activeRunner=runner
-                    val result = if(cameraMode) CameraPipeline(this,{value,label -> progress(value,label)},runner::isCancelled) {
-                        runner.restore(it,2,42,96)
-                    }.run(local).toMutableMap() else runner.restore(local,scale,42).toMutableMap()
+                    val result = if(photoMode) CameraPipeline(this,{value,label -> progress(value,label)},runner::isCancelled,
+                        {runner.restore(it,PhotoPlan.SCALE,42,PhotoPlan.OUTPUT_OVERLAP)},cameraMode)
+                        .run(local).toMutableMap() else runner.restore(local,scale,42).toMutableMap()
                     result["testRunId"]=intent.getStringExtra("vosr_test_run_id") ?: ""
                     if (intent.getBooleanExtra("vosr_test_save",false)) result["galleryUri"]=saveImage(File(result["path"] as String))
                     val shared = File(getExternalFilesDir(null), "app-test-output.png")

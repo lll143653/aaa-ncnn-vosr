@@ -15,14 +15,27 @@ def sha(path):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--apk-only',action='store_true',help='Verify existing model ZIPs and refresh only APK evidence/checksum')
+    parser.add_argument('--tile-size',type=int,choices=[512,1024],default=1024)
     args=parser.parse_args()
     shutil.copy2(ROOT/'THIRD_PARTY_NOTICES.md',OUT/'THIRD_PARTY_NOTICES.md')
-    acceptance=json.loads((ROOT/'artifacts/mobile-tests/acceptance.json').read_text(encoding='utf-8'))
-    assert len(acceptance)==4 and all(x['passed'] for x in acceptance)
-    assert [x['backend'] for x in acceptance]==['npu','gpu','gpu','npu']
-    assert acceptance[2]['sessionReused'] and acceptance[2]['case']=='jpeg-exif6-vertical'
+    if args.tile_size==1024:
+        acceptance=json.loads((ROOT/'artifacts/photo-tests-1024/acceptance.json').read_text(encoding='utf-8'))
+        assert {x['backend'] for x in acceptance}=={'npu','gpu'} and all(x['passed'] for x in acceptance)
+        npu=next(x for x in acceptance if x['backend']=='npu')
+        assert npu['photo']['tiles']==len(npu['photo']['nativePatchMs'])==4
+        gpu=next(x for x in acceptance if x['backend']=='gpu')
+        assert gpu['raw']['stats']['streamGraphs'] and gpu['raw']['stats']['maxResidentNetCount']==1
+        assert all(x['raw']['passed'] and x['raw']['pixelPsnrVsFp32Db']>=(30 if x['backend']=='npu' else 45) for x in acceptance)
+    else:
+        acceptance=json.loads((ROOT/'artifacts/mobile-tests/acceptance.json').read_text(encoding='utf-8'))
+        assert len(acceptance)==4 and all(x['passed'] for x in acceptance)
+        assert [x['backend'] for x in acceptance]==['npu','gpu','gpu','npu']
+        assert acceptance[2]['sessionReused'] and acceptance[2]['case']=='jpeg-exif6-vertical'
     records=[]
     for backend,folder,name in [('npu','qnn','vosr-0.5b-htp-v73-models.zip'),('gpu','ncnn-0.5b','vosr-0.5b-ncnn-vulkan-models.zip')]:
+        if args.tile_size==1024:
+            folder+='-1024'
+            name=name.replace('-models.zip','-1024-models.zip')
         if args.apk_only:
             previous=json.loads((OUT/'SHA256.json').read_text())
             record=next(item for item in previous['files'] if item['file']==name)
@@ -31,12 +44,14 @@ def main():
             continue
         source=ROOT/'artifacts'/folder
         manifest=json.loads((source/'manifest.json').read_text())
-        if backend=='gpu':
+        assert manifest['tileSize']==args.tile_size
+        if backend=='gpu' and args.tile_size==512:
             manifest.setdefault('gpuProfile',{})['hostReductionFallback']=True
             manifest['deviceValidated']=True
             manifest['validatedDevice']='Xiaomi 13 / SM8550 / Adreno 740 / Android 13'
             manifest['validationReference']='docs/09-mobile-backend-acceptance.md'
             (source/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+        assert manifest['deviceValidated']
         files=['manifest.json']
         for stage in manifest['stages']:
             assert sha(source/stage['file'])==stage['sha256'],stage['file']
@@ -47,7 +62,7 @@ def main():
         path=OUT/name
         with zipfile.ZipFile(path,'w',compression=zipfile.ZIP_STORED,allowZip64=True) as archive:
             for file in files: archive.write(source/file,file)
-        committed=ROOT/'models/mobile-0.5b'/backend
+        committed=ROOT/'models/mobile-0.5b'/(backend+('-1024' if args.tile_size==1024 else ''))
         committed.mkdir(parents=True,exist_ok=True)
         shutil.copy2(source/'manifest.json',committed/'manifest.json')
         records.append({'file':name,'bytes':path.stat().st_size,'sha256':sha(path)})

@@ -56,13 +56,14 @@ class Finish(nn.Module):
     def __init__(self, original):
         super().__init__()
         self.final = original.final
+        self.grid = original.grid
         self.register_buffer('c', original.c.clone())
         order=[(py * 2 + px) * 4 + c for c in range(4) for py in range(2) for px in range(2)]
         self.register_buffer('reorder', torch.eye(16)[:,order])
 
     def forward(self, tokens, noise):
         x = self.final(tokens, self.c)
-        x = (x @ self.reorder).transpose(1, 2).reshape(1, 16, 32, 32)
+        x = (x @ self.reorder).transpose(1, 2).reshape(1, 16, self.grid, self.grid)
         return noise - F.pixel_shuffle(x, 2)
 
 
@@ -103,6 +104,9 @@ def convert(name, module, inputs, output, rewrite=None):
         expected = module(*inputs)
         if rewrite:
             module = rewrite(module).eval()
+        if (inputs[0].ndim==4 and inputs[0].shape[-1]>=1024) or (name.startswith('dit_blocks') and inputs[0].shape[1]>1024) or (name=='decoder' and inputs[0].shape[-1]>=128):
+            from large_tile import patch_attention as patch_large_attention
+            patch_large_attention(module)
         patch_fp32(module)
         actual = module(*inputs)
         exps = expected if isinstance(expected, tuple) else (expected,)
@@ -145,6 +149,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=PROJECT/'artifacts/ncnn-0.5b')
     parser.add_argument('--reference', type=Path, required=True)
+    parser.add_argument('--size',type=int,default=512)
     parser.add_argument('--components', nargs='+', default=['encoder','dino','dit','decoder'])
     parser.add_argument('--from-traces', action='store_true', help='Re-lower existing validated FP32 traces with the pinned pnnx')
     args = parser.parse_args()
@@ -189,9 +194,9 @@ def main():
                 m.rope = Rope(m.rope)
                 patch_attention(m)
                 return m
-            (tokens,) = convert(f'dit_blocks_{first:02}', DitBlocks(model, first, 4, 512),
+            (tokens,) = convert(f'dit_blocks_{first:02}', DitBlocks(model, first, 4, args.size),
                                 (tokens, context), out, rewrite_blocks)
-        convert('dit_finish', DitFinish(model, 512), (tokens, noise), out, Finish)
+        convert('dit_finish', DitFinish(model, args.size), (tokens, noise), out, Finish)
 
 
 if __name__ == '__main__':

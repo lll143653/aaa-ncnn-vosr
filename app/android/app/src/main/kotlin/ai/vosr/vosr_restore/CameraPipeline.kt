@@ -7,15 +7,16 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.CancellationException
 
-/** Camera-only path: bounded working size, fixed 2x, then original-size pyramid fusion. */
+/** Bounded working size, fixed 2x, then original-size pyramid fusion. Camera inputs also require verified zoom. */
 internal class CameraPipeline(private val context: Context,
     private val progress: (Double,String)->Unit,
     private val cancelled: ()->Boolean,
-    private val restore: (File)->Map<String,Any>) {
+    private val restore: (File)->Map<String,Any>,
+    private val requireCameraZoom: Boolean=true) {
     private fun checkCancelled() { if(cancelled()) throw CancellationException("已取消处理") }
     fun run(input: File): Map<String,Any> {
         val started=System.nanoTime()
-        val zoom=CameraPhoto.zoom(input)
+        val zoom=if(requireCameraZoom) CameraPhoto.zoom(input) else null
         val working=File(context.cacheDir,"camera_work_${UUID.randomUUID()}.png")
         val output=File(context.cacheDir,"vosr_camera_${UUID.randomUUID()}.png")
         val partial=File(output.absolutePath+".partial")
@@ -25,13 +26,17 @@ internal class CameraPipeline(private val context: Context,
                 val required=Math.addExact(Math.multiplyExact(Math.multiplyExact(lr.width.toLong(),lr.height.toLong()),3L),64L*1024*1024)
                 require(StatFs(context.cacheDir.absolutePath).availableBytes>required) { "缓存空间不足，无法保存原尺寸融合图像" }
                 val (w,h)=CameraPhoto.workingSize(lr.width,lr.height)
-                progress(.01,"准备拍照图像 · ${lr.width}×${lr.height} → ${w}×${h}")
+                progress(.01,"准备图像 · ${lr.width}×${lr.height} → ${w}×${h}")
                 val bitmap=lr.render(0,0,w,h,w,h,true)
                 try { working.outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG,100,it)) } }
                 finally { bitmap.recycle() }
                 checkCancelled()
                 val preparedMs=(System.nanoTime()-started)/1_000_000
                 val result=restore(working).toMutableMap()
+                check(result["patchSize"]==PhotoPlan.OUTPUT_TILE && result["overlap"]==PhotoPlan.OUTPUT_OVERLAP) {
+                    "当前模型不支持 512 输入块的真实 2× 输出，请导入 1024 输出模型"
+                }
+                check((result["tiles"] as Number).toInt()==PhotoPlan.count(w)*PhotoPlan.count(h))
                 intermediate=File(result["path"] as String)
                 val fusionStart=System.nanoTime()
                 NativeImage(intermediate!!).use { sr ->
@@ -75,8 +80,12 @@ internal class CameraPipeline(private val context: Context,
                 result["width"]=lr.width; result["height"]=lr.height
                 result["inputDownscaled"]=maxOf(lr.width,lr.height)>832
                 result["exifOrientation"]=lr.orientation
-                result["mode"]="camera"; result["scale"]=2; result["overlap"]=96
-                result["zoomRatio"]=zoom; result["zoomVerification"]="EXIF DigitalZoomRatio >= 10"
+                result["mode"]=if(requireCameraZoom) "camera" else "photo"
+                result["scale"]=PhotoPlan.SCALE; result["overlap"]=PhotoPlan.INPUT_OVERLAP
+                result["inputPatchSize"]=PhotoPlan.INPUT_TILE; result["outputPatchSize"]=PhotoPlan.OUTPUT_TILE
+                result["inputStride"]=PhotoPlan.INPUT_STRIDE; result["outputOverlap"]=PhotoPlan.OUTPUT_OVERLAP
+                result["overlapCoordinateSpace"]="resized-input"
+                if(zoom!=null) { result["zoomRatio"]=zoom; result["zoomVerification"]="EXIF DigitalZoomRatio >= 10" }
                 result["fusion"]="gaussian-pyramid-sr-detail-lr-base"; result["pyramidLevels"]=5
                 result["cameraPreparationMs"]=preparedMs
                 val fusionMs=(System.nanoTime()-fusionStart)/1_000_000
@@ -86,7 +95,7 @@ internal class CameraPipeline(private val context: Context,
                 result["fusionMs"]=fusionMs
                 result["elapsedMs"]=(System.nanoTime()-started)/1_000_000
                 result["path"]=output.absolutePath
-                progress(1.0,"拍照复原完成")
+                progress(1.0,"复原完成")
                 return result
             }
         } catch(error: Throwable) { output.delete(); throw error }

@@ -23,6 +23,8 @@
 #include "QnnInterface.h"
 #include "System/QnnSystemInterface.h"
 #include "HTP/QnnHtpDevice.h"
+#include "HTP/QnnHtpContext.h"
+#include "HTP/QnnHtpSystemContext.h"
 #include "profile_trace.h"
 
 namespace {
@@ -76,6 +78,7 @@ struct Session {
   Qnn_ProfileHandle_t profile=nullptr;
   Qnn_GraphHandle_t graph=nullptr;
   std::vector<Qnn_Tensor_t> inputs,outputs;
+  uint64_t scratchBytes=0;
 };
 class Engine {
   void* htpLibrary=nullptr; void* systemLibrary=nullptr;
@@ -92,6 +95,12 @@ class Engine {
   std::mutex runMutex;
   std::vector<double> lastTimes;
   double loadMs=0,lastRunMs=0;
+  bool sharedScratch=false;
+  bool streamDit=false;
+  uint64_t contextCreates=0;
+  size_t residentContexts=0,maxResidentContexts=0;
+  double contextLoadMs=0,contextFreeMs=0;
+  uint64_t scratchMax=0,scratchSum=0;
   uint64_t runCount=0;
   bool profiling=false;
   int profileStartStage=0;
@@ -167,6 +176,17 @@ class Engine {
       default: throw std::runtime_error("Unsupported context binary metadata");
     }
     require(graphCount==1 && graphs,"Expected one graph in "+name);
+    if(graphs[0].version==QNN_SYSTEM_CONTEXT_GRAPH_INFO_VERSION_3) {
+      const auto& g=graphs[0].graphInfoV3;
+      if(g.graphBlobInfo && g.graphBlobInfoSize>=sizeof(QnnHtpSystemContext_GraphBlobInfo_t)) {
+        const auto* h=static_cast<const QnnHtpSystemContext_GraphBlobInfo_t*>(g.graphBlobInfo);
+        if(h->version==QNN_SYSTEM_CONTEXT_HTP_GRAPH_INFO_BLOB_VERSION_V1)
+          session.scratchBytes=h->contextBinaryGraphBlobInfoV1.spillFillBufferSize;
+        else if(h->version==QNN_SYSTEM_CONTEXT_HTP_GRAPH_INFO_BLOB_VERSION_V2 && g.graphBlobInfoSize>=sizeof(QnnHtpSystemContext_GraphBlobInfoV2_t))
+          session.scratchBytes=static_cast<const QnnHtpSystemContext_GraphBlobInfoV2_t*>(g.graphBlobInfo)->ddrTensorSize;
+      }
+    }
+    scratchMax=std::max(scratchMax,session.scratchBytes); scratchSum+=session.scratchBytes;
     const char* graphName=nullptr; Qnn_Tensor_t *inputs=nullptr,*outputs=nullptr; uint32_t ni=0,no=0;
     #define READ_GRAPH(versionName) { const auto& g=graphs[0].versionName; graphName=g.graphName; inputs=g.graphInputs; outputs=g.graphOutputs; ni=g.numGraphInputs; no=g.numGraphOutputs; }
     switch (graphs[0].version) {
@@ -181,8 +201,21 @@ class Engine {
     for (auto& tensor:session.inputs) bindTensor(tensor,index,false);
     for (auto& tensor:session.outputs) bindTensor(tensor,index,true);
     if(profiling && index>=profileStartStage) check(api.profileCreate(backend,QNN_PROFILE_LEVEL_DETAILED,&session.profile),"profileCreate "+name);
-    check(api.contextCreateFromBinary(backend,device,nullptr,session.binary->data,session.binary->size,&session.context,session.profile),"contextCreateFromBinary "+name);
-    check(api.graphRetrieve(session.context,graphName,&session.graph),"graphRetrieve "+name);
+  }
+  void createContext(size_t index) {
+    auto& session=*sessions[index];
+    QnnHtpContext_CustomConfig_t group=QNN_HTP_CONTEXT_CUSTOM_CONFIG_INIT;
+    group.option=QNN_HTP_CONTEXT_CONFIG_OPTION_REGISTER_MULTI_CONTEXTS;
+    group.groupRegistration.firstGroupHandle=index?sessions[0]->context:nullptr;
+    group.groupRegistration.maxSpillFillBuffer=scratchMax;
+    QnnContext_Config_t config=QNN_CONTEXT_CONFIG_INIT;
+    config.option=QNN_CONTEXT_CONFIG_OPTION_CUSTOM; config.customConfig=&group;
+    const QnnContext_Config_t* configs[]={&config,nullptr};
+    __android_log_print(ANDROID_LOG_INFO,"VOSR-QNN","Load %s: scratch %llu / shared %llu",session.name.c_str(),
+        static_cast<unsigned long long>(session.scratchBytes),static_cast<unsigned long long>(scratchMax));
+    check(api.contextCreateFromBinary(backend,device,sharedScratch?configs:nullptr,session.binary->data,session.binary->size,&session.context,session.profile),"contextCreateFromBinary "+session.name);
+    check(api.graphRetrieve(session.context,session.name.c_str(),&session.graph),"graphRetrieve "+session.name);
+    contextCreates++; residentContexts++; maxResidentContexts=std::max(maxResidentContexts,residentContexts);
   }
 public:
   std::atomic<bool> cancelled{false};
@@ -238,8 +271,15 @@ public:
       TraceSpan trace("vosr.load.npu."+names[i]); auto stageStart=Clock::now();
       load(directory,names[i],i); initializationTimes.push_back(ms(stageStart));
     }
+    sharedScratch=buffers.at("rgb").size()==3*1024*1024;
+    streamDit=sharedScratch;
+    if(sharedScratch) require(scratchMax>0,"Missing HTP scratch metadata for large tiles");
+    for(size_t i=0;i<sessions.size();i++) {
+      if(streamDit && i>=3 && i<=9) continue;
+      auto stageStart=Clock::now(); createContext(i); initializationTimes[i]+=ms(stageStart);
+    }
     lastTimes.resize(names.size()); loadMs=ms(start);
-    __android_log_print(ANDROID_LOG_INFO,"VOSR-QNN","Resident HTP ready: 12 contexts, load %.1f ms",loadMs);
+    __android_log_print(ANDROID_LOG_INFO,"VOSR-QNN","HTP ready: 12 graphs, %zu resident contexts, load %.1f ms",residentContexts,loadMs);
   }
   void copyInput(JNIEnv* env,jfloatArray array,const std::string& name) {
     auto& buffer=buffers.at(name);
@@ -252,13 +292,26 @@ public:
     TraceSpan trace("vosr.npu.patch");
     vote(true); powerVoteMs=ms(start);
     struct IdleVote { Engine* engine; ~IdleVote() { engine->vote(false); } } idle{this};
-    hardwareProfiles.clear(); profileCollectionMs=0;
+    hardwareProfiles.clear(); profileCollectionMs=0; contextLoadMs=0; contextFreeMs=0;
     auto copyStart=Clock::now();
     copyInput(env,rgb,"rgb"); copyInput(env,dino,"dino_input"); copyInput(env,noise,"noise");
     inputCopyMs=ms(copyStart);
     for (size_t i=0;i<sessions.size();i++) {
       if (cancelled.load()) throw std::runtime_error("已取消处理");
       auto& session=*sessions[i];
+      const bool transient=streamDit && i>=3 && i<=9;
+      if(transient) { auto loadStart=Clock::now(); createContext(i); contextLoadMs+=ms(loadStart); }
+      struct TransientContext {
+        Engine* engine; Session* session; bool active;
+        ~TransientContext() {
+          if(active && session->context) {
+            auto start=Clock::now();
+            engine->api.contextFree(session->context,nullptr);
+            session->context=nullptr; session->graph=nullptr;
+            engine->residentContexts--; engine->contextFreeMs+=ms(start);
+          }
+        }
+      } transientContext{this,&session,transient};
       Qnn_ProfileHandle_t profile=profiling?session.profile:nullptr;
       TraceSpan stageTrace("vosr.npu."+session.name); auto stageStart=Clock::now();
       auto executeStatus=api.graphExecute(session.graph,session.inputs.data(),session.inputs.size(),session.outputs.data(),session.outputs.size(),profile,nullptr);
@@ -284,9 +337,12 @@ public:
   void setProfiling(bool enabled) { std::lock_guard<std::mutex> lock(runMutex); profiling=enabled; }
   std::string stats() {
     std::lock_guard<std::mutex> lock(runMutex); std::ostringstream out;
-    out<<"{\"engine\":\"JNI_QNN_HTP_RESIDENT\",\"contextCreateCount\":"<<sessions.size()
+    out<<"{\"engine\":\"JNI_QNN_HTP_RESIDENT\",\"contextCreateCount\":"<<contextCreates<<",\"graphCount\":"<<sessions.size()
        <<",\"modelLoadMs\":"<<loadMs<<",\"patchRunCount\":"<<runCount<<",\"lastPatchMs\":"<<lastRunMs
        <<",\"powerVoteSupported\":"<<(powerReady?"true":"false")<<",\"boostVoteAccepted\":"<<(lastBoostAccepted?"true":"false")
+       <<",\"sharedScratch\":"<<(sharedScratch?"true":"false")<<",\"scratchMaxBytes\":"<<scratchMax<<",\"scratchSumBytes\":"<<scratchSum
+       <<",\"streamDit\":"<<(streamDit?"true":"false")<<",\"residentContextCount\":"<<residentContexts<<",\"maxResidentContextCount\":"<<maxResidentContexts
+       <<",\"contextLoadMs\":"<<contextLoadMs<<",\"contextFreeMs\":"<<contextFreeMs
        <<",\"profilingEnabled\":"<<(profiling?"true":"false")<<",\"inputCopyMs\":"<<inputCopyMs<<",\"outputCopyMs\":"<<outputCopyMs
        <<",\"profileStartStage\":"<<profileStartStage
        <<",\"profileCollectionMs\":"<<profileCollectionMs<<",\"powerVoteMs\":"<<powerVoteMs

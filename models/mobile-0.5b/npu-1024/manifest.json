@@ -1,0 +1,228 @@
+{
+  "formatVersion": 1,
+  "model": "VOSR_0.5B_os",
+  "backend": "QNN_HTP_V73_FP16",
+  "tileSize": 1024,
+  "deviceValidated": true,
+  "referencePsnrDb": 60.156158667421195,
+  "stages": [
+    {
+      "name": "encoder",
+      "label": "encoder",
+      "file": "encoder.bin",
+      "sha256": "324cc96f11df60befea34f47ef8d399abe02cd041b405716b6d60f6a75261188",
+      "inputs": {
+        "rgb": "rgb"
+      },
+      "outputs": [
+        {
+          "name": "condition",
+          "binding": "condition",
+          "bytes": 262144
+        }
+      ]
+    },
+    {
+      "name": "dino",
+      "label": "dino",
+      "file": "dino.bin",
+      "sha256": "3b1b0293d10eb244cacaef34e671b8c6b80d3bba990da476e5ca4580cdc80947",
+      "inputs": {
+        "image": "dino_input"
+      },
+      "outputs": [
+        {
+          "name": "features",
+          "binding": "features",
+          "bytes": 3145728
+        }
+      ]
+    },
+    {
+      "name": "dit_prepare",
+      "label": "dit_prepare",
+      "file": "dit_prepare.bin",
+      "sha256": "3d3031fc41af97a5b03baf9d53f6ef8885b716f3dcb6c729b2724907c9367df6",
+      "inputs": {
+        "condition": "condition",
+        "noise": "noise",
+        "features": "features"
+      },
+      "outputs": [
+        {
+          "name": "tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        },
+        {
+          "name": "context",
+          "binding": "context",
+          "bytes": 4194304
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_00",
+      "label": "dit_blocks_00",
+      "file": "dit_blocks_00.bin",
+      "sha256": "ad6fb9d4c8d2bc82c571ab1e91f12db38d2c52e93d586a7fc286bb9695b2a2de",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_04",
+      "label": "dit_blocks_04",
+      "file": "dit_blocks_04.bin",
+      "sha256": "25741622f84ca22451ef842dbd3165a11b82bbbb91de6e226fca96e6e2e8aed3",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_08",
+      "label": "dit_blocks_08",
+      "file": "dit_blocks_08.bin",
+      "sha256": "54f010b3b9b5b07c883fda667ade1cd9bb0af8a659ee830ac1301c7dfe1db097",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_12",
+      "label": "dit_blocks_12",
+      "file": "dit_blocks_12.bin",
+      "sha256": "5b2d4b016cb6b2dcad1eaac91b3fea430288b55cba18907e756c6ee6e44b8536",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_16",
+      "label": "dit_blocks_16",
+      "file": "dit_blocks_16.bin",
+      "sha256": "0c13f1eba6216f1beab167acbec661cbc28b0b9a9295ef519ea704712a7744f6",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_20",
+      "label": "dit_blocks_20",
+      "file": "dit_blocks_20.bin",
+      "sha256": "3b256030108801062b5d6173e49e817d7d89bef79948e8b04e8d201d74e1e777",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_blocks_24",
+      "label": "dit_blocks_24",
+      "file": "dit_blocks_24.bin",
+      "sha256": "87d6233a590091bbabbc7eb2952fd9eb49af1ce7ad6b81ed3c4f42e68c699776",
+      "inputs": {
+        "tokens": "tokens",
+        "context": "context"
+      },
+      "outputs": [
+        {
+          "name": "next_tokens",
+          "binding": "tokens",
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "name": "dit_finish",
+      "label": "dit_finish",
+      "file": "dit_finish.bin",
+      "sha256": "7bda444b141dba82e91ed7da5b085eea2278bafa336092f8c1a990e99b8572e8",
+      "inputs": {
+        "tokens": "tokens",
+        "noise": "noise"
+      },
+      "outputs": [
+        {
+          "name": "latent",
+          "binding": "latent",
+          "bytes": 262144
+        }
+      ]
+    },
+    {
+      "name": "decoder",
+      "label": "decoder",
+      "file": "decoder.bin",
+      "sha256": "c910ffc92ad38c8ba1184c6ee9710e4f13384a888d7d9083ded6f30b27c260a8",
+      "inputs": {
+        "latent": "latent"
+      },
+      "outputs": [
+        {
+          "name": "rgb",
+          "binding": "pixels",
+          "bytes": 12582912
+        }
+      ]
+    }
+  ],
+  "validatedDevice": "Xiaomi 13 / SM8550 / Android 13",
+  "validationReference": "docs/14-input-patch-512.md",
+  "photoProfile": {
+    "longestSide": 832,
+    "inputTileSize": 512,
+    "inputOverlap": 96,
+    "inputStride": 416,
+    "scale": 2,
+    "outputTileSize": 1024,
+    "outputOverlap": 192
+  }
+}
