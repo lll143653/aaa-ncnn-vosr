@@ -12,6 +12,6 @@
 | 10 应用内性能 Profile | 已完成，前台/休眠分组、12 子图硬件事件、全部 CPU 回退算子和数值回归 | 10-performance-profile.md |
 | 11 仓库整理 | 已完成，构建文件、文档入口和提交范围整理 | 11-repository-cleanup.md |
 | 12 系统相机拍照复原 | 代码、原生数值检查和 NPU 样例通过；本机实拍因 EXIF 缺失被严格拒绝 | 12-camera-restoration.md |
-| 13 拍照元数据排查 | 已确认返回完整 JPEG、其它 EXIF 存在；独立相机原片对照待确认 | 13-camera-metadata-diagnosis.md |
+| 13 拍照元数据排查 | 对照完成；两条相机路径均保留 EXIF，均缺少标准变焦字段 | 13-camera-metadata-diagnosis.md |
 
 当前用法见 [Android 文档](android.md)，本地安装包说明见 [使用说明](../deliverables/使用说明.md)。小米 13 前台 NPU 完整推理中位数 1.588 秒/块，单块样例整次复原约 2.23 秒；GPU 兼容路径约 38.55 秒/块，134 个 MatMul 和 85 个 Reduction 在 CPU 执行。详细条件见阶段 10。开发分支为 `feat/mobile-npu-gpu`。
