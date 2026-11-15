@@ -7,18 +7,18 @@ import kotlin.math.roundToInt
 
 internal object CameraPhoto {
     fun zoom(file: File): Double {
-        val ratio=try {
-            val raw=ExifInterface(file.absolutePath).getAttribute(ExifInterface.TAG_DIGITAL_ZOOM_RATIO)
-            val parts=raw?.trim()?.split('/')
-            when(parts?.size) {
-                1 -> parts[0].toDoubleOrNull() ?: Double.NaN
-                2 -> (parts[0].toDoubleOrNull() ?: Double.NaN)/(parts[1].toDoubleOrNull() ?: Double.NaN)
-                else -> Double.NaN
-            }
+        val exif=try { ExifInterface(file) }
+            catch(error: Exception) { throw IllegalArgumentException("无法读取照片 EXIF，未进行超分。",error) }
+        val raw=exif.getAttribute(ExifInterface.TAG_DIGITAL_ZOOM_RATIO)
+            ?: throw IllegalArgumentException("照片缺少 EXIF 变焦倍数字段，无法严格确认 ≥10×，未进行超分。这不代表照片没有其它 EXIF。")
+        val parts=raw.trim().split('/')
+        val ratio=when(parts.size) {
+            1 -> parts[0].toDoubleOrNull() ?: Double.NaN
+            2 -> (parts[0].toDoubleOrNull() ?: Double.NaN)/(parts[1].toDoubleOrNull() ?: Double.NaN)
+            else -> Double.NaN
         }
-            catch (_: Exception) { Double.NaN }
         require(ratio.isFinite() && ratio>=10.0) {
-            if(!ratio.isFinite() || ratio<=0) "系统相机未提供可验证的 EXIF 变焦倍数。按严格校验规则，本张不进行超分。"
+            if(!ratio.isFinite() || ratio<=0) "照片 EXIF 变焦倍数值无效，无法严格确认 ≥10×，未进行超分。"
             else "EXIF 数字变焦记录为 ${"%.2f".format(java.util.Locale.ROOT,ratio)}×，无法确认 ≥10×，不进行复原。"
         }
         return ratio
